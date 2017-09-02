@@ -1,6 +1,23 @@
 # coding=utf-8
 import xlrd, xlwt, re
 
+"""
+transfer_nick_amount
+    v1.0: 将数量数据中的“万”“吨”等转换为统一格式
+standardize_name
+    v1.0: 更改货主、货物中的昵称为标准名称
+sum_owner_goods
+    v1.0: 返回指定货主、指定货物的总数量
+getratio
+    v1.0: 判断numa是否为0，然后计算numa/numb，若为0则返回/
+getgoodsamount
+    v1.0: 返回指定货物的总量、钢厂总量、钢厂占比、贸易商总量、贸易商占比
+write_summary
+    v1.0: 计算并输出统计数据结果
+write_detail
+    v1.0: 依次写入序号、货主、货种、数量的数据，每条数据一行
+"""
+
 def transfer_nick_amount(subsheet, colindex):
     titleindex = 0
     ownerindex = 0
