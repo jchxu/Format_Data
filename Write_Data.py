@@ -12,8 +12,10 @@ getratio
     v1.0: 判断numa是否为0，然后计算numa/numb，若为0则返回/
 getgoodsamount
     v1.0: 返回指定货物的总量、钢厂总量、钢厂占比、贸易商总量、贸易商占比
+    v1.1: 更改钢厂、贸易商判断方式：若非钢厂，则为贸易商
 write_summary
     v1.0: 计算并输出统计数据结果
+    v1.1: 更改钢厂、贸易商判断方式：若非钢厂，则为贸易商
 write_detail
     v1.0: 依次写入序号、货主、货种、数量的数据，每条数据一行
 """
@@ -125,10 +127,11 @@ def getgoodsamount(goodsname, owner, goods, amount, company, trader):
     totalamount = sum_owner_goods(owner,goods,amount, u"ALL", goodsname)
     companyamount = 0
     traderamount = 0
-    for item in company:
-        companyamount += sum_owner_goods(owner,goods,amount, item, goodsname)
-    for item in trader:
-        traderamount += sum_owner_goods(owner,goods,amount, item, goodsname)
+    for item in set(owner.values()):
+        if item in company:
+            companyamount += sum_owner_goods(owner,goods,amount, item, goodsname)
+        else:
+            traderamount += sum_owner_goods(owner,goods,amount, item, goodsname)
     companyratio = getratio(companyamount, totalamount)
     traderratio = getratio(traderamount, totalamount)
     return (totalamount, companyamount, companyratio, traderamount, traderratio)
@@ -144,10 +147,11 @@ def write_summary(resultfile, mainpowder, mainblock, nonmain, owner, goods, amou
     totalamount = sum_owner_goods(owner, goods, amount, u"ALL", u"ALL")
     totalcom = 0
     totaltrader = 0
-    for item in company:
-        totalcom += sum_owner_goods(owner, goods, amount, item, u"ALL")
-    for item in trader:
-        totaltrader += sum_owner_goods(owner, goods, amount, item, u"ALL")
+    for item in set(owner.values()):
+        if item in company:
+            totalcom += sum_owner_goods(owner, goods, amount, item, u"ALL")
+        else:
+            totaltrader += sum_owner_goods(owner, goods, amount, item, u"ALL")
     totalcomratio = getratio(totalcom, totalamount)
     totaltraderratio = getratio(totaltrader, totalamount)
     if (totalamount-totalcom-totaltrader) > 1:
@@ -217,9 +221,9 @@ def write_summary(resultfile, mainpowder, mainblock, nonmain, owner, goods, amou
     nonmaincom = totalcom - maincom - \
                    goodscom[len(mainpowder)+len(mainblock)] - goodscom[len(mainpowder)+len(mainblock)+1]
     nonmaintrader = totaltrader - maintrader - \
-                 goodstrader[len(mainpowder) + len(mainblock)] - goodstrader[len(mainpowder) + len(mainblock) + 1]
-    nonmaincomratio = getratio(maincom, nonmaintotal)
-    nonmaintraderratio = getratio(maintrader, nonmaintotal)
+                 goodstrader[len(mainpowder)+len(mainblock)] - goodstrader[len(mainpowder)+len(mainblock)+1]
+    nonmaincomratio = getratio(nonmaincom, nonmaintotal)
+    nonmaintraderratio = getratio(nonmaintrader, nonmaintotal)
     #print nonmaintotal, nonmaincom, nonmaincomratio, nonmaintrader, nonmaintraderratio
     nonmainrow = [u"非主流资源", nonmaintotal, nonmaincom, nonmaincomratio, nonmaintrader, nonmaintraderratio]
 
