@@ -3,6 +3,16 @@ import xlrd, xlwt, re, datetime
 from xlutils.copy import copy
 from os import path
 
+"""
+get_tracking_file
+get_date_time
+get_date
+get_filename
+read_list
+read_data
+read_merge_cell
+"""
+
 def get_tracking_file(trackname):
     if path.exists(trackname.decode('utf-8')):
         originfile = xlrd.open_workbook(trackname.decode('utf-8'), 'r')
