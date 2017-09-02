@@ -4,8 +4,8 @@ from Read_Data import *
 from Write_Data import *
 
 ### 需要用户定义的变量 ###
-filename = "连云港贸易矿8.4.xls"   # Excel数据文件的文件名，带扩展名。
-sheetindex = [1,2,3,4]  # 需要读取的子表序号(第几个)，有多个时以英文逗号,间隔。
+filename = "京唐港8.1库存.xlsx"   # Excel数据文件的文件名，带扩展名。
+sheetindex = [1]  # 需要读取的子表序号(第几个)，有多个时以英文逗号,间隔。
 listname = "分类名录.xlsx"  # 记录主流粉矿、主流块矿、非主流资源、钢厂、贸易商名录的文件
 stdname = "标准名称.xlsx"  # 记录钢厂、贸易商、品种标准名称的数据文件
 #########################
@@ -15,10 +15,10 @@ resultname = get_filename(filename)
 #resultname = "铁矿港存结构分析-岚桥-0804.xls"   # 用于自定义输出文件的文件名，或get_filename函数出错时使用
 
 ### 打开文件，读取数据 ###
-mainpowder, mainblock, nonmain, company, trader = read_list(listname)
+mainpowder, mainblock, nonmain, kinds, company, trader = read_list(listname)
 datafile = xlrd.open_workbook(filename.decode('utf-8'))
 sheets = datafile.sheets()
-owner, goods, amount = read_data(sheets, sheetindex)
+owner, goods, amount = read_data(sheets, sheetindex, kinds)
 # 打印输出测试
 #for i in range(1, len(owner.keys())+1):
 #    print '"%d": "%s", "%s", "%d"' % (i, owner[i], goods[i], amount[i])
