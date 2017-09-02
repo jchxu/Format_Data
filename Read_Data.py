@@ -143,13 +143,11 @@ def judge_merger_cell(sheets, sheetindex):
         sheet = sheets[i-1]
         mergedict = {}
         mergerange = sheet.merged_cells
-        print mergerange
         if mergerange:
             for k in range(0, len(mergerange)):
                 #if (mergerange[k][3]-mergerange[k][2]) > 1:
                 print "Mergerd cell found in subsheet %d: Column %s->%s, Row %d->%d" \
                       % (i, chr(65+mergerange[k][2]), chr(65+mergerange[k][3]-1), mergerange[k][0]+1, mergerange[k][1])
-
 
 def read_merge_cell(sheets):
     mergedict = {}
