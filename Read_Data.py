@@ -9,7 +9,13 @@ get_date_time
 get_date
 get_filename
 read_list
+    v1.0: 分别返回主流粉矿、主流块矿、非主流资源、钢厂、贸易商的列表
+    v1.1: 分别返回主流粉矿、主流块矿、非主流资源、品种、钢厂、贸易商的列表
 read_data
+    v1.0: 根据指定关键词判断标题行、货物列、货主列、数量列位置，根据指定条件判断是否为有效数据行，
+          依次读取并返回货主、货物、数量的字典
+    v1.1: 根据指定关键词判断标题行、货物列、货主列、数量列位置，根据指定条件判断是否为有效数据行，
+          根据品种字典判断是否是需要读取的货物，依次读取并返回货主、货物、数量的字典
 read_merge_cell
 """
 
@@ -69,17 +75,18 @@ def get_filename (filename):
         print "未找到文件名港口关键词，请检查文件名。"
 
 def read_list(listname):
-    """读取分类名录文件中的主流粉矿、主流块矿、非主流资源、钢厂、贸易商，分别为一个子表
-    各自返回一个列表"""
+    """读取分类名录文件中的主流粉矿、主流块矿、非主流资源、品种、钢厂、贸易商
+    分别为一个子表各自返回一个列表"""
     listfile = xlrd.open_workbook(listname.decode('utf-8'), 'r')
     mainpowder = listfile.sheets()[0].col_values(0)
     mainblock = listfile.sheets()[1].col_values(0)
     nonmain = listfile.sheets()[2].col_values(0)
-    company = listfile.sheets()[3].col_values(0)
-    trader = listfile.sheets()[4].col_values(0)
-    return (mainpowder, mainblock, nonmain, company, trader)
+    kinds = listfile.sheets()[3].col_values(0)
+    company = listfile.sheets()[4].col_values(0)
+    trader = listfile.sheets()[5].col_values(0)
+    return (mainpowder, mainblock, nonmain, kinds, company, trader)
 
-def read_data(sheets, sheetindex):
+def read_data(sheets, sheetindex, kinds):
     """读取子表中的数据行。利用指定的特殊名词判断标题行、货物列、货主列、数量列位置
     根据指定条件判断是否为有效数据行，然后依次读取货主、货物、数量，最后返回一个字典。"""
     owner = {}
@@ -103,7 +110,7 @@ def read_data(sheets, sheetindex):
 
         ### 确定货物、货主、数量列位置 ###
         for k in range(0, len(title)):
-            if title[k] in [u"货名", u"货种", u"货性", u"品种"]:
+            if title[k] in [u"货种", u"货名", u"货性", u"品种"]:
                 goodsindex = k
             elif title[k] in [u"货主"] or (u"收货人" in title[k]) or (u"钢厂" in title[k]):
                 ownerindex = k
@@ -114,8 +121,8 @@ def read_data(sheets, sheetindex):
         ### 遍历每行，检查是否是所需数据，是则读取入相应字典 ###
         for k in range(titleindex+1, sheets[i-1].nrows):
             data = sheets[i-1].row_values(k)
-            if data[goodsindex] and (not (u"合计" in data[goodsindex])) \
-                    and isinstance(data[amountindex],float): #判断货物和数量列是否有数据，且不是合计的数据。
+            if data[goodsindex] and (data[goodsindex] in kinds) and (not (u"合计" in data[goodsindex])) \
+                    and isinstance(data[amountindex],float): #判断货物和数量列是否有数据，不是合计的数据，是在品种清单中的货物。
                 count += 1
                 owner[count] = data[ownerindex]
                 goods[count] = data[goodsindex]
