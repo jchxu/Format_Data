@@ -5,9 +5,13 @@ from os import path
 
 """
 get_tracking_file
+    v1.0: 根据追踪数据文件名返回Workbook及可写入数据的行index。若无此文件，新建；若有，利用xlutils复制
 get_date_time
+    v1.0: 依次返回当前日期时间中的年、月、日
 get_date
+    v1.0: 返回文件名中对应的月和日，mmdd格式
 get_filename
+    v1.0: 根据港口名称关键词，返回结果文件和数据追踪文件的文件名
 read_list
     v1.0: 分别返回主流粉矿、主流块矿、非主流资源、钢厂、贸易商的列表
     v1.1: 分别返回主流粉矿、主流块矿、非主流资源、品种、钢厂、贸易商的列表
@@ -17,6 +21,7 @@ read_data
     v1.1: 根据指定关键词判断标题行、货物列、货主列、数量列位置，根据指定条件判断是否为有效数据行，
           根据品种字典判断是否是需要读取的货物，依次读取并返回货主、货物、数量的字典
 read_merge_cell
+    v1.0: 如果有合并单元格的情况，返回字典结果，key为序号，value为子表index、合并单元格的行index、列index、值
 """
 
 def get_tracking_file(trackname):
@@ -61,7 +66,7 @@ def get_date(filename):
 def get_filename (filename):
     stddate = get_date(filename)
     prefix = "铁矿港存结构分析-"
-    namelist = ["岚桥", "岚山", "连云港", "京唐港", "实业"]
+    namelist = ["岚桥", "岚山", "连云港", "京唐港", "实业", "青岛", "日照"]
     resultname = ''
     trackname = ''
     for item in namelist:
