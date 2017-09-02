@@ -20,6 +20,8 @@ read_data
           依次读取并返回货主、货物、数量的字典
     v1.1: 根据指定关键词判断标题行、货物列、货主列、数量列位置，根据指定条件判断是否为有效数据行，
           根据品种字典判断是否是需要读取的货物，依次读取并返回货主、货物、数量的字典
+judge_merger_cell
+    v1.0: 判断是否存在合并单元格，若有，输出合并单元格范围
 read_merge_cell
     v1.0: 如果有合并单元格的情况，返回字典结果，key为序号，value为子表index、合并单元格的行index、列index、值
 """
@@ -135,6 +137,19 @@ def read_data(sheets, sheetindex, kinds):
     ### 返回存储数据的3个字典 ###
     print "A total of %d records have been read." % count
     return (owner, goods, amount)
+
+def judge_merger_cell(sheets, sheetindex):
+    for i in sheetindex:
+        sheet = sheets[i-1]
+        mergedict = {}
+        mergerange = sheet.merged_cells
+        print mergerange
+        if mergerange:
+            for k in range(0, len(mergerange)):
+                #if (mergerange[k][3]-mergerange[k][2]) > 1:
+                print "Mergerd cell found in subsheet %d: Column %s->%s, Row %d->%d" \
+                      % (i, chr(65+mergerange[k][2]), chr(65+mergerange[k][3]-1), mergerange[k][0]+1, mergerange[k][1])
+
 
 def read_merge_cell(sheets):
     mergedict = {}

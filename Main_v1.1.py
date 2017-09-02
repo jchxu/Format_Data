@@ -24,6 +24,7 @@ resultname = get_filename(filename)
 mainpowder, mainblock, nonmain, kinds, company, trader = read_list(listname)
 datafile = xlrd.open_workbook(filename.decode('utf-8'))
 sheets = datafile.sheets()
+judge_merger_cell(sheets, sheetindex)
 owner, goods, amount = read_data(sheets, sheetindex, kinds)
 # 打印输出测试
 #for i in range(1, len(owner.keys())+1):
