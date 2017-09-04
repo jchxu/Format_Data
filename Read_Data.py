@@ -15,6 +15,7 @@ get_filename
 read_list
     v1.0: 分别返回主流粉矿、主流块矿、非主流资源、钢厂、贸易商的列表
     v1.1: 分别返回主流粉矿、主流块矿、非主流资源、品种、钢厂、贸易商的列表
+    v1.2: 分别返回主流粉矿、主流块矿、非主流资源、品种、钢厂、贸易商、要追踪数据的粉矿、块矿的列表
 read_data
     v1.0: 根据指定关键词判断标题行、货物列、货主列、数量列位置，根据指定条件判断是否为有效数据行，
           依次读取并返回货主、货物、数量的字典
@@ -91,7 +92,9 @@ def read_list(listname):
     kinds = listfile.sheets()[3].col_values(0)
     company = listfile.sheets()[4].col_values(0)
     trader = listfile.sheets()[5].col_values(0)
-    return (mainpowder, mainblock, nonmain, kinds, company, trader)
+    powder = listfile.sheets()[6].col_values(0)
+    block = listfile.sheets()[7].col_values(0)
+    return (mainpowder, mainblock, nonmain, kinds, company, trader, powder, block)
 
 def read_data(sheets, sheetindex, kinds):
     """读取子表中的数据行。利用指定的特殊名词判断标题行、货物列、货主列、数量列位置
