@@ -122,7 +122,7 @@ def getratio(numa, numb):
     else:
         return "/"
 
-def getgoodsamount(goodsname, owner, goods, amount, company, trader):
+def getgoodsamount(goodsname, owner, goods, amount, company):
     """返回指定货物的总量、钢厂总量、钢厂占比、贸易商总量、贸易商占比"""
     totalamount = sum_owner_goods(owner,goods,amount, u"ALL", goodsname)
     companyamount = 0
@@ -136,13 +136,7 @@ def getgoodsamount(goodsname, owner, goods, amount, company, trader):
     traderratio = getratio(traderamount, totalamount)
     return (totalamount, companyamount, companyratio, traderamount, traderratio)
 
-def write_summary(resultfile, mainpowder, mainblock, nonmain, owner, goods, amount, company, trader):
-    subsheet = resultfile.add_sheet("Summary")
-    titlerow = [u"矿种", u"合计", u"钢厂", u"钢厂占比", u"贸易商", u"贸易商占比"]
-    powderadd = 5   #从第5行开始写主流粉矿
-    blockadd = 7 + len(mainpowder)  # 加2表示空1行开始写主流块矿。+n表示空n-1行
-    nonmainadd = 9 + len(mainpowder) + len(mainblock)   # 再加2（n）表示空1（n-1）行开始写非主流资源。再+n表示再空n-1行
-
+def calculate_summary(mainpowder, mainblock, nonmain, owner, goods, amount, company):
     ### 计算所有货物的总和 ###
     totalamount = sum_owner_goods(owner, goods, amount, u"ALL", u"ALL")
     totalcom = 0
@@ -152,8 +146,6 @@ def write_summary(resultfile, mainpowder, mainblock, nonmain, owner, goods, amou
             totalcom += sum_owner_goods(owner, goods, amount, item, u"ALL")
         else:
             totaltrader += sum_owner_goods(owner, goods, amount, item, u"ALL")
-    totalcomratio = getratio(totalcom, totalamount)
-    totaltraderratio = getratio(totaltrader, totalamount)
     if (totalamount-totalcom-totaltrader) > 1:
         print "The Lists of Companies and Traders May Be IN-Complete!"
         for i in range(1, len(owner.keys())+1):
@@ -163,6 +155,8 @@ def write_summary(resultfile, mainpowder, mainblock, nonmain, owner, goods, amou
         for i in range(1, len(owner.keys())+1):
             if (owner[i] in company) and (owner[i] in trader):
                 print 'No.%d: The "%s" Was In the List of Company, Meanwhile, In List of Trader!' % (i, owner[i])
+    totalcomratio = getratio(totalcom, totalamount)
+    totaltraderratio = getratio(totaltrader, totalamount)
     #print totalamount, totalcom, totalcomratio, totaltrader, totaltraderratio
     totalrow = [u"港存总计", totalamount, totalcom, totalcomratio, totaltrader, totaltraderratio]
 
@@ -175,7 +169,7 @@ def write_summary(resultfile, mainpowder, mainblock, nonmain, owner, goods, amou
     goodsrow = {}
     biglist = mainpowder + mainblock + nonmain
     for i in range(0, len(biglist)):
-        out = getgoodsamount(biglist[i], owner, goods, amount, company, trader)
+        out = getgoodsamount(biglist[i], owner, goods, amount, company)
         goodstotal[i], goodscom[i], goodscomratio[i], goodstrader[i], goodstraderratio[i] = out
         #print goodstotal[i], goodscom[i], goodscomratio[i], goodstrader[i], goodstraderratio[i]
         goodsrow[i] = [biglist[i], goodstotal[i], goodscom[i], goodscomratio[i], goodstrader[i], goodstraderratio[i]]
@@ -221,13 +215,21 @@ def write_summary(resultfile, mainpowder, mainblock, nonmain, owner, goods, amou
     nonmaincom = totalcom - maincom - \
                    goodscom[len(mainpowder)+len(mainblock)] - goodscom[len(mainpowder)+len(mainblock)+1]
     nonmaintrader = totaltrader - maintrader - \
-                 goodstrader[len(mainpowder)+len(mainblock)] - goodstrader[len(mainpowder)+len(mainblock)+1]
+                 goodstrader[len(mainpowder) + len(mainblock)] - goodstrader[len(mainpowder) + len(mainblock) + 1]
     nonmaincomratio = getratio(nonmaincom, nonmaintotal)
     nonmaintraderratio = getratio(nonmaintrader, nonmaintotal)
     #print nonmaintotal, nonmaincom, nonmaincomratio, nonmaintrader, nonmaintraderratio
     nonmainrow = [u"非主流资源", nonmaintotal, nonmaincom, nonmaincomratio, nonmaintrader, nonmaintraderratio]
 
-    ### 写标题行、各子项统计行、各矿数据行(纵向书写) ###
+    return (totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow)
+
+def write_summary(resultfile, mainpowder, mainblock, nonmain, totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow):
+    subsheet = resultfile.add_sheet("Summary")
+    titlerow = [u"矿种", u"合计", u"钢厂", u"钢厂占比", u"贸易商", u"贸易商占比"]
+    powderadd = 5   #从第5行开始写主流粉矿,即主流资源与主流粉矿之间空1行
+    blockadd = 7 + len(mainpowder)  # 加2表示空1行开始写主流块矿。+n表示空n-1行
+    nonmainadd = 9 + len(mainpowder) + len(mainblock)   # 再加2（n）表示空1（n-1）行开始写非主流资源。再+n表示再空n-1行
+
     for i in range(0, len(titlerow)):
         subsheet.write(0, i, titlerow[i])
         subsheet.write(1, i, totalrow[i])
@@ -241,8 +243,9 @@ def write_summary(resultfile, mainpowder, mainblock, nonmain, owner, goods, amou
         subsheet.write(nonmainadd-1, i, nonmainrow[i])
         for k in range(0, len(nonmain)):
             subsheet.write(nonmainadd+k, i, goodsrow[k+len(mainpowder)+len(mainblock)][i])
-    print 'Summary data have been written in subsheet "%s".' % subsheet.name.encode('utf-8')
+    print 'Summary Data Have Been Written in Subsheet "%s".' % subsheet.name.encode('utf-8')
     return resultfile
+
 
 def write_detail(resultfile, owner, goods, amount):
     """按照序号、货主、货物、数量的顺序写入所有数据"""

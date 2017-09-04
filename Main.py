@@ -35,7 +35,11 @@ standardize_name(stdname, owner, goods)
 
 ### 输出统计及详细数据 ###
 resultfile = xlwt.Workbook()
-write_summary(resultfile, mainpowder, mainblock, nonmain, owner, goods, amount, company, trader)
-write_detail(resultfile, owner, goods, amount)
+#write_summary(resultfile, mainpowder, mainblock, nonmain, owner, goods, amount, company, trader)
+totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow = \
+    calculate_summary(mainpowder, mainblock, nonmain, owner, goods, amount, company)
+write_summary(resultfile, mainpowder, mainblock, nonmain, totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow)
+
+#write_detail(resultfile, owner, goods, amount)
 resultfile.save(resultname.decode('utf-8'))
 print 'Summary and Detail Results Have Been Written in File "%s".' % resultname.decode('utf-8')
