@@ -128,8 +128,8 @@ def read_data(sheets, sheetindex, kinds):
         ### 遍历每行，检查是否是所需数据，是则读取入相应字典 ###
         for k in range(titleindex+1, sheets[i-1].nrows):
             data = sheets[i-1].row_values(k)
-            if data[goodsindex] and (data[goodsindex] in kinds) and (not (u"合计" in data[goodsindex])) \
-                    and isinstance(data[amountindex],float): #判断货物和数量列是否有数据，不是合计的数据，是在品种清单中的货物。
+            if data[goodsindex] and ((data[goodsindex] in kinds) or (u"精粉" in data[goodsindex]) or (u"球团" in data[goodsindex])) \
+                    and (not (u"合计" in data[goodsindex])) and isinstance(data[amountindex],float): #判断货物和数量列是否有数据，不是合计的数据，是在品种清单中的货物。
                 count += 1
                 owner[count] = data[ownerindex]
                 goods[count] = data[goodsindex]
