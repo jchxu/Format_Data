@@ -1,8 +1,8 @@
 # coding=utf-8
 import xlrd, xlwt, re
 from xlutils.copy import copy
-from write_data import *
-from read_data import *
+from Write_Data import *
+from Read_Data import *
 
 filename = "连云港贸易矿8.4.xls"  # Excel数据文件的文件名，带扩展名。
 sheetindex = 3  # 需要读取的子表序号(第几个子表？)。

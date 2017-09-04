@@ -31,18 +31,21 @@ def get_tracking_file(trackname):
     if path.exists(trackname.decode('utf-8')):
         originfile = xlrd.open_workbook(trackname.decode('utf-8'), 'r')
         trackfile = copy(originfile)
+        subsheet = trackfile.get_sheet(0)
         rowindex = originfile.sheets()[0].nrows
     else:
         trackfile = xlwt.Workbook()
+        subsheet = trackfile.add_sheet("Tracking Data")
         rowindex = 0
-    return (trackfile, rowindex)
+    return (trackfile, subsheet, rowindex)
 
 def get_date_time():
     now_time = datetime.datetime.now()
+    date = now_time.strftime('%Y/%m/%d')
     year = now_time.strftime('%Y')
     month = now_time.strftime('%m')
     day = now_time.strftime('%d')
-    return (year, month, day)
+    return (date, year, month, day)
 
 def get_date(filename):
     flag = filename.count('.') -1
@@ -77,8 +80,8 @@ def get_filename (filename):
             resultname = prefix+item+"-"+stddate+".xls"
             trackname = item+"-历史追踪数据.xls"
     if resultname and trackname:
-        #return (resultname, trackname)
-        return resultname
+        return (resultname, trackname)
+        #return resultname
     else:
         print "未找到文件名港口关键词，请检查文件名。"
 

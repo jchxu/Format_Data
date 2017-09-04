@@ -1,5 +1,6 @@
 # coding=utf-8
 import xlrd, xlwt, re
+from Read_Data import *
 
 """
 transfer_nick_amount
@@ -265,7 +266,74 @@ def write_detail(resultfile, owner, goods, amount):
     print 'Detail data have been written in subsheet "%s".' % subsheet.name.encode('utf-8')
     return resultfile
 
-def write_tracking(trackfile, mainpowder, mainblock, nonmain, owner, goods, amount, company, trader):
+def write_tracking(trackfile, subsheet, rowindex, powder, block, totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow):
     """追加输出历史追踪数据"""
-    print
+    date = get_date_time()[0]
+    # 标题部分
+    if rowindex == 0:
+        subsheet.write(rowindex,0,u"日期")
+        subsheet.write(rowindex, 1, u"总库存")
+        subsheet.write(rowindex, 2, u"主流")
+        subsheet.write(rowindex, 3, u"主流占比")
+        subsheet.write(rowindex, 4, u"粉矿")
+        subsheet.write(rowindex, 5, u"粉矿占比")
+        for i in range(0, len(powder)):
+            subsheet.write(rowindex, 6 + i * 6, powder[i])
+            subsheet.write(rowindex, 7 + i * 6, powder[i]+u"占比")
+            subsheet.write(rowindex, 8 + i * 6, u"钢厂"+powder[i])
+            subsheet.write(rowindex, 9 + i * 6, u"钢厂"+powder[i]+u"占比")
+            subsheet.write(rowindex, 10 + i * 6, u"贸易商"+powder[i])
+            subsheet.write(rowindex, 11 + i * 6, u"贸易商"+powder[i]+u"占比")
+        subsheet.write(rowindex, 6+6*len(powder), u"块矿")
+        subsheet.write(rowindex, 7+6*len(powder), u"块矿占比")
+        for i in range(0, len(block)):
+            subsheet.write(rowindex, 8+6*len(powder) + i * 6, block[i])
+            subsheet.write(rowindex, 9+6*len(powder) + i * 6, block[i]+u"占比")
+            subsheet.write(rowindex, 10+6*len(powder) + i * 6, u"钢厂"+block[i])
+            subsheet.write(rowindex, 11+6*len(powder) + i * 6, u"钢厂"+block[i]+u"占比")
+            subsheet.write(rowindex, 12+6*len(powder) + i * 6, u"贸易商"+block[i])
+            subsheet.write(rowindex, 13+6*len(powder) + i * 6, u"贸易商"+block[i]+u"占比")
+        subsheet.write(rowindex, 8 + 6 * (len(powder)+len(block)), u"钢厂资源")
+        subsheet.write(rowindex, 9 + 6 * (len(powder)+len(block)), u"钢厂占比")
+        subsheet.write(rowindex, 10 + 6 * (len(powder)+len(block)), u"贸易商资源")
+        subsheet.write(rowindex, 11 + 6 * (len(powder)+len(block)), u"贸易商占比")
+        subsheet.write(rowindex, 12 + 6 * (len(powder) + len(block)), u"非主流")
+        subsheet.write(rowindex, 13 + 6 * (len(powder) + len(block)), u"钢厂资源")
+        subsheet.write(rowindex, 14 + 6 * (len(powder) + len(block)), u"钢厂占比")
+        subsheet.write(rowindex, 15 + 6 * (len(powder) + len(block)), u"贸易商资源")
+        subsheet.write(rowindex, 16 + 6 * (len(powder) + len(block)), u"贸易商占比")
+        rowindex += 5
+    # 数据部分
+    subsheet.write(rowindex, 0, date)
+    subsheet.write(rowindex, 1, totalrow[1])
+    subsheet.write(rowindex, 2, mainrow[1])
+    subsheet.write(rowindex, 3, getratio(mainrow[1], totalrow[1]))
+    subsheet.write(rowindex, 4, powderrow[1])
+    subsheet.write(rowindex, 5, getratio(powderrow[1], mainrow[1]))
+    for i in range(0, len(powder)):
+        subsheet.write(rowindex, 6 + i * 6, powder[i])
+        subsheet.write(rowindex, 7 + i * 6, powder[i] + u"占比")
+        subsheet.write(rowindex, 8 + i * 6, u"钢厂" + powder[i])
+        subsheet.write(rowindex, 9 + i * 6, u"钢厂" + powder[i] + u"占比")
+        subsheet.write(rowindex, 10 + i * 6, u"贸易商" + powder[i])
+        subsheet.write(rowindex, 11 + i * 6, u"贸易商" + powder[i] + u"占比")
+    subsheet.write(rowindex, 6 + 6 * len(powder), blockrow[1])
+    subsheet.write(rowindex, 7 + 6 * len(powder), getratio(powderrow[1], mainrow[1]))
+    for i in range(0, len(block)):
+        subsheet.write(rowindex, 8 + 6 * len(powder) + i * 6, block[i])
+        subsheet.write(rowindex, 9 + 6 * len(powder) + i * 6, block[i] + u"占比")
+        subsheet.write(rowindex, 10 + 6 * len(powder) + i * 6, u"钢厂" + block[i])
+        subsheet.write(rowindex, 11 + 6 * len(powder) + i * 6, u"钢厂" + block[i] + u"占比")
+        subsheet.write(rowindex, 12 + 6 * len(powder) + i * 6, u"贸易商" + block[i])
+        subsheet.write(rowindex, 13 + 6 * len(powder) + i * 6, u"贸易商" + block[i] + u"占比")
+    subsheet.write(rowindex, 8 + 6 * (len(powder) + len(block)), mainrow[2])
+    subsheet.write(rowindex, 9 + 6 * (len(powder) + len(block)), mainrow[3])
+    subsheet.write(rowindex, 10 + 6 * (len(powder) + len(block)), mainrow[4])
+    subsheet.write(rowindex, 11 + 6 * (len(powder) + len(block)), mainrow[5])
+    subsheet.write(rowindex, 12 + 6 * (len(powder) + len(block)), nonmainrow[1])
+    subsheet.write(rowindex, 13 + 6 * (len(powder) + len(block)), nonmainrow[2])
+    subsheet.write(rowindex, 14 + 6 * (len(powder) + len(block)), nonmainrow[3])
+    subsheet.write(rowindex, 15 + 6 * (len(powder) + len(block)), nonmainrow[4])
+    subsheet.write(rowindex, 16 + 6 * (len(powder) + len(block)), nonmainrow[5])
+
     return trackfile
