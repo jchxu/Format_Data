@@ -80,7 +80,7 @@ def get_filename (filename):
             resultname = prefix+item+"-"+stddate+".xls"
             trackname = item+"-历史追踪数据.xls"
     if resultname and trackname:
-        return (resultname, trackname)
+        return (resultname, trackname, stddate)
         #return resultname
     else:
         print "未找到文件名港口关键词，请检查文件名。"

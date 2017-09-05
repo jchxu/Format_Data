@@ -248,7 +248,6 @@ def write_summary(resultfile, mainpowder, mainblock, nonmain, totalrow, mainrow,
     print 'Summary Data Have Been Written in Subsheet "%s".' % subsheet.name.encode('utf-8')
     return resultfile
 
-
 def write_detail(resultfile, owner, goods, amount):
     """按照序号、货主、货物、数量的顺序写入所有数据"""
     subsheet = resultfile.add_sheet("Detail")
@@ -266,9 +265,12 @@ def write_detail(resultfile, owner, goods, amount):
     print 'Detail data have been written in subsheet "%s".' % subsheet.name.encode('utf-8')
     return resultfile
 
-def write_tracking(trackfile, subsheet, rowindex, powder, block, totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow):
+def write_tracking(stddate, trackfile, subsheet, rowindex, powder, block, totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow):
     """追加输出历史追踪数据"""
-    date = get_date_time()[0]
+    year = get_date_time()[1]
+    month = stddate[0:2]
+    day = stddate[2:4]
+    date = "%4s/%2s/%2s" % (year, month, day)
     # 标题部分
     if rowindex == 0:
         subsheet.write(rowindex,0,u"日期")

@@ -17,7 +17,7 @@ stdname = "标准名称.xlsx"  # 记录货主（钢厂、贸易商）、品种�
 #########################
 
 ### 确定结果文件名和对应日期 ###
-resultname, trackname = get_filename(filename)
+resultname, trackname, stddate = get_filename(filename)
 #resultname = "铁矿港存结构分析-岚桥-0804.xls"   # 用于自定义输出文件的文件名，或get_filename函数出错时使用
 
 ### 打开文件，读取数据 ###
@@ -45,6 +45,6 @@ totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow = \
 
 ### 输出历史追踪数据 ###
 trackfile, subsheet, rowindex = get_tracking_file(trackname)
-write_tracking(trackfile, subsheet, rowindex, powder, block, totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow)
+write_tracking(stddate, trackfile, subsheet, rowindex, powder, block, totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow)
 trackfile.save(trackname.decode('utf-8'))
 print 'Tracking Results Have Been Written in File "%s".' % trackname.decode('utf-8')
