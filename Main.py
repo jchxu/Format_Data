@@ -45,6 +45,7 @@ totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow = \
 
 ### 输出历史追踪数据 ###
 trackfile, subsheet, rowindex = get_tracking_file(trackname)
-write_tracking(stddate, trackfile, subsheet, rowindex, powder, block, totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow)
+goodsdata = calculate_trackdata(powder, block, goodsrow, owner, goods, amount, company)
+write_tracking(stddate, trackfile, subsheet, rowindex, powder, block, totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsdata)
 trackfile.save(trackname.decode('utf-8'))
 print 'Tracking Results Have Been Written in File "%s".' % trackname.decode('utf-8')
