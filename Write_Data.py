@@ -1,6 +1,7 @@
 # coding=utf-8
 import xlrd, xlwt, re
 from Read_Data import *
+from xlutils.display import *
 
 """
 transfer_nick_amount
@@ -294,36 +295,36 @@ def write_tracking(stddate, trackfile, subsheet, rowindex, powder, block, totalr
     # 标题部分
     if rowindex == 0:
         rowindex += 4
-        subsheet.write(rowindex, 0, u"日期")
-        subsheet.write(rowindex, 1, u"总库存")
-        subsheet.write(rowindex, 2, u"主流")
+        subsheet.write_merge(0, rowindex, 0, 0, u"日期")
+        subsheet.write_merge(0, rowindex, 1, 1, u"总库存")
+        subsheet.write_merge(1, rowindex, 2, 2, u"主流")
         subsheet.write(rowindex, 3, u"主流占比")
-        subsheet.write(rowindex, 4, u"粉矿")
+        subsheet.write_merge(2, rowindex, 4, 4, u"粉矿")
         subsheet.write(rowindex, 5, u"粉矿占比")
         for i in range(0, len(powder)):
-            subsheet.write(rowindex, 6 + i * 6, powder[i])
+            subsheet.write_merge(3, rowindex, 6 + i * 6, 6 + i * 6, powder[i])
             subsheet.write(rowindex, 7 + i * 6, powder[i]+u"占比")
             subsheet.write(rowindex, 8 + i * 6, u"钢厂"+powder[i])
             subsheet.write(rowindex, 9 + i * 6, u"钢厂"+powder[i]+u"占比")
             subsheet.write(rowindex, 10 + i * 6, u"贸易商"+powder[i])
             subsheet.write(rowindex, 11 + i * 6, u"贸易商"+powder[i]+u"占比")
-        subsheet.write(rowindex, 6+6*len(powder), u"块矿")
+        subsheet.write_merge(2, rowindex, 6+6*len(powder), 6+6*len(powder), u"块矿")
         subsheet.write(rowindex, 7+6*len(powder), u"块矿占比")
         for i in range(0, len(block)):
-            subsheet.write(rowindex, 8+6*len(powder) + i * 6, block[i])
+            subsheet.write_merge(3, rowindex, 8+6*len(powder) + i * 6, 8+6*len(powder) + i * 6, block[i])
             subsheet.write(rowindex, 9+6*len(powder) + i * 6, block[i]+u"占比")
             subsheet.write(rowindex, 10+6*len(powder) + i * 6, u"钢厂"+block[i])
             subsheet.write(rowindex, 11+6*len(powder) + i * 6, u"钢厂"+block[i]+u"占比")
             subsheet.write(rowindex, 12+6*len(powder) + i * 6, u"贸易商"+block[i])
             subsheet.write(rowindex, 13+6*len(powder) + i * 6, u"贸易商"+block[i]+u"占比")
-        subsheet.write(rowindex, 8 + 6 * (len(powder)+len(block)), u"钢厂资源")
+        subsheet.write_merge(2, rowindex, 8 + 6 * (len(powder)+len(block)), 8 + 6 * (len(powder)+len(block)), u"钢厂资源")
         subsheet.write(rowindex, 9 + 6 * (len(powder)+len(block)), u"钢厂占比")
-        subsheet.write(rowindex, 10 + 6 * (len(powder)+len(block)), u"贸易商资源")
+        subsheet.write_merge(2, rowindex, 10 + 6 * (len(powder)+len(block)), 10 + 6 * (len(powder)+len(block)), u"贸易商资源")
         subsheet.write(rowindex, 11 + 6 * (len(powder)+len(block)), u"贸易商占比")
-        subsheet.write(rowindex, 12 + 6 * (len(powder) + len(block)), u"非主流")
-        subsheet.write(rowindex, 13 + 6 * (len(powder) + len(block)), u"钢厂资源")
+        subsheet.write_merge(1, rowindex, 12 + 6 * (len(powder) + len(block)), 12 + 6 * (len(powder) + len(block)), u"非主流")
+        subsheet.write_merge(2, rowindex, 13 + 6 * (len(powder) + len(block)), 13 + 6 * (len(powder) + len(block)), u"钢厂资源")
         subsheet.write(rowindex, 14 + 6 * (len(powder) + len(block)), u"钢厂占比")
-        subsheet.write(rowindex, 15 + 6 * (len(powder) + len(block)), u"贸易商资源")
+        subsheet.write_merge(2, rowindex, 15 + 6 * (len(powder) + len(block)), 15 + 6 * (len(powder) + len(block)), u"贸易商资源")
         subsheet.write(rowindex, 16 + 6 * (len(powder) + len(block)), u"贸易商占比")
         rowindex += 1
     # 数据部分
@@ -358,5 +359,21 @@ def write_tracking(stddate, trackfile, subsheet, rowindex, powder, block, totalr
     subsheet.write(rowindex, 14 + 6 * (len(powder) + len(block)), nonmainrow[3])
     subsheet.write(rowindex, 15 + 6 * (len(powder) + len(block)), nonmainrow[4])
     subsheet.write(rowindex, 16 + 6 * (len(powder) + len(block)), nonmainrow[5])
+
+    # 合并标题单元格
+    subsheet.write_merge(0, 4, 0, 0, u"日期")
+    subsheet.write_merge(0, 4, 1, 1, u"总库存")
+    subsheet.write_merge(1, 4, 2, 2, u"主流")
+    subsheet.write_merge(2, 4, 4, 4, u"粉矿")
+    for i in range(0, len(powder)):
+        subsheet.write_merge(3, 4, 6 + i * 6, 6 + i * 6, powder[i])
+    subsheet.write_merge(2, 4, 6 + 6 * len(powder), 6 + 6 * len(powder), u"块矿")
+    for i in range(0, len(block)):
+        subsheet.write_merge(3, 4, 8 + 6 * len(powder) + i * 6, 8 + 6 * len(powder) + i * 6, block[i])
+    subsheet.write_merge(2, 4, 8 + 6 * (len(powder) + len(block)), 8 + 6 * (len(powder) + len(block)), u"钢厂资源")
+    subsheet.write_merge(2, 4, 10 + 6 * (len(powder) + len(block)), 10 + 6 * (len(powder) + len(block)), u"贸易商资源")
+    subsheet.write_merge(1, 4, 12 + 6 * (len(powder) + len(block)), 12 + 6 * (len(powder) + len(block)), u"非主流")
+    subsheet.write_merge(2, 4, 13 + 6 * (len(powder) + len(block)), 13 + 6 * (len(powder) + len(block)), u"钢厂资源")
+    subsheet.write_merge(2, 4, 15 + 6 * (len(powder) + len(block)), 15 + 6 * (len(powder) + len(block)), u"贸易商资源")
 
     return trackfile

@@ -10,10 +10,6 @@ sheetindex = [1]  # 需要读取的子表序号(第几个)，有多个时以英�
 # 相对固定的设置，如有改动，需相应改变设置
 listname = "分类名录.xlsx"  # 记录主流粉矿、主流块矿、非主流资源、品种、钢厂、贸易商名录的文件
 stdname = "标准名称.xlsx"  # 记录货主（钢厂、贸易商）、品种标准名称的数据文件
-
-
-
-
 #########################
 
 ### 确定结果文件名和对应日期 ###
@@ -37,11 +33,11 @@ standardize_name(stdname, owner, goods)
 resultfile = xlwt.Workbook()
 totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow = \
     calculate_summary(mainpowder, mainblock, nonmain, owner, goods, amount, company)
-#write_summary(resultfile, mainpowder, mainblock, nonmain, totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow)
+write_summary(resultfile, mainpowder, mainblock, nonmain, totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow)
 
-#write_detail(resultfile, owner, goods, amount)
-#resultfile.save(resultname.decode('utf-8'))
-#print 'Summary and Detail Results Have Been Written in File "%s".' % resultname.decode('utf-8')
+write_detail(resultfile, owner, goods, amount)
+resultfile.save(resultname.decode('utf-8'))
+print 'Summary and Detail Results Have Been Written in File "%s".' % resultname.decode('utf-8')
 
 ### 输出历史追踪数据 ###
 trackfile, subsheet, rowindex = get_tracking_file(trackname)
