@@ -27,6 +27,31 @@ write_tracking
     v1.0: 输出历史追踪数据
 """
 
+# 设置背景颜色
+pattern = xlwt.Pattern()
+pattern.pattern = xlwt.Pattern.SOLID_PATTERN
+pattern.pattern_fore_colour = 5
+# 设置对齐方式
+alignmentCenter = xlwt.Alignment()
+alignmentCenter.horz = xlwt.Alignment.HORZ_CENTER
+alignmentCenter.vert = xlwt.Alignment.VERT_CENTER
+alignmentLeft = xlwt.Alignment()
+alignmentLeft.horz = xlwt.Alignment.HORZ_LEFT
+alignmentLeft.vert = xlwt.Alignment.VERT_CENTER
+alignmentRight = xlwt.Alignment()
+alignmentRight.horz = xlwt.Alignment.HORZ_RIGHT
+alignmentRight.vert = xlwt.Alignment.VERT_CENTER
+# 设置字体样式
+fontB = xlwt.Font()
+fontB.bold = True
+
+
+# 创建格式
+#style = xlwt.XFStyle()
+#style.pattern = pattern
+#style.alignment = alignment
+
+
 def transfer_nick_amount(subsheet, colindex):
     titleindex = 0
     ownerindex = 0
@@ -255,18 +280,23 @@ def write_summary(resultfile, mainpowder, mainblock, nonmain, totalrow, mainrow,
 
 def write_detail(resultfile, owner, goods, amount):
     """按照序号、货主、货物、数量的顺序写入所有数据"""
+    ### 设置输出格式 ###
+    style_title = xlwt.easyxf("font: bold on, color-index blue; alignment: vert center, horz center; pattern: pattern solid, fore_colour light_yellow;")
+    style_center = xlwt.easyxf("alignment: vert center, horz center;")
+    style_name = xlwt.easyxf("alignment: vert center, horz left;")
+    style_amount = xlwt.easyxf("alignment: vert center, horz right;", num_format_str='#,##0')
+
     subsheet = resultfile.add_sheet("Detail")
     titlerow = [u"序号", u"货主", u"货名", u"数量"]
-
     ### 写标题行 ###
     for i in range(0, len(titlerow)):
-        subsheet.write(0, i, titlerow[i])
+        subsheet.write(0, i, titlerow[i],style_title)
     ### 写每行数据 ###
     for i in range(1, len(owner.keys()) + 1):
-        subsheet.write(i, 0, i)
-        subsheet.write(i, 1, owner[i])
-        subsheet.write(i, 2, goods[i])
-        subsheet.write(i, 3, amount[i])
+        subsheet.write(i, 0, i, style_center)
+        subsheet.write(i, 1, owner[i], style_name)
+        subsheet.write(i, 2, goods[i], style_name)
+        subsheet.write(i, 3, amount[i], style_amount)
     print 'Detail data have been written in subsheet "%s".' % subsheet.name.encode('utf-8')
     return resultfile
 
@@ -288,10 +318,6 @@ def calculate_trackdata(powder, block, goodsrow, owner, goods, amount, company):
 
 def write_tracking(stddate, trackfile, subsheet, rowindex, powder, block, totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsdata):
     """追加输出历史追踪数据"""
-    year = get_date_time()[1]
-    month = stddate[0:2]
-    day = stddate[2:4]
-    date = "%4s/%2s/%2s" % (year, month, day)
     # 标题部分
     titleflag = 0
     if rowindex == 0:
@@ -330,6 +356,10 @@ def write_tracking(stddate, trackfile, subsheet, rowindex, powder, block, totalr
         subsheet.write(rowindex, 16 + 6 * (len(powder) + len(block)), u"贸易商占比")
         rowindex += 1
     # 数据部分
+    year = get_date_time()[1]
+    month = stddate[0:2]
+    day = stddate[2:4]
+    date = "%4s/%2s/%2s" % (year, month, day)
     subsheet.write(rowindex, 0, date)
     subsheet.write(rowindex, 1, totalrow[1])
     subsheet.write(rowindex, 2, mainrow[1])
