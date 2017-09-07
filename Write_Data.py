@@ -256,6 +256,11 @@ def calculate_summary(mainpowder, mainblock, nonmain, owner, goods, amount, comp
     return (totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow)
 
 def write_summary(resultfile, mainpowder, mainblock, nonmain, totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow):
+    ### 设置输出格式 ###
+    style_title = xlwt.easyxf("font: bold on, color-index blue; alignment: vert center, horz center; pattern: pattern solid, fore_colour light_yellow;")
+
+
+
     subsheet = resultfile.add_sheet("Summary")
     titlerow = [u"矿种", u"合计", u"钢厂", u"钢厂占比", u"贸易商", u"贸易商占比"]
     powderadd = 5   #从第5行开始写主流粉矿,即主流资源与主流粉矿之间空1行
@@ -263,7 +268,7 @@ def write_summary(resultfile, mainpowder, mainblock, nonmain, totalrow, mainrow,
     nonmainadd = 9 + len(mainpowder) + len(mainblock)   # 再加2（n）表示空1（n-1）行开始写非主流资源。再+n表示再空n-1行
 
     for i in range(0, len(titlerow)):
-        subsheet.write(0, i, titlerow[i])
+        subsheet.write(0, i, titlerow[i], style_title)
         subsheet.write(1, i, totalrow[i])
         subsheet.write(2, i, mainrow[i])
         subsheet.write(powderadd-1, i, powderrow[i])
