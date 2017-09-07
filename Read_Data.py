@@ -16,6 +16,7 @@ read_list
     v1.0: 分别返回主流粉矿、主流块矿、非主流资源、钢厂、贸易商的列表
     v1.1: 分别返回主流粉矿、主流块矿、非主流资源、品种、钢厂、贸易商的列表
     v1.2: 分别返回主流粉矿、主流块矿、非主流资源、品种、钢厂、贸易商、要追踪数据的粉矿、块矿的列表
+    v1.3: 更改结构：第一个子表列出后面各个子表的题目。增加整个list的扩展性，可增加新的分类，每个分类中可增加具体项目。
 read_data
     v1.0: 根据指定关键词判断标题行、货物列、货主列、数量列位置，根据指定条件判断是否为有效数据行，
           依次读取并返回货主、货物、数量的字典
@@ -89,9 +90,11 @@ def read_list(listname):
     """读取分类名录文件中的主流粉矿、主流块矿、非主流资源、品种、钢厂、贸易商
     分别为一个子表各自返回一个列表"""
     listfile = xlrd.open_workbook(listname.decode('utf-8'), 'r')
-    mainpowder = listfile.sheets()[0].col_values(0)
-    mainblock = listfile.sheets()[1].col_values(0)
-    nonmain = listfile.sheets()[2].col_values(0)
+    class_list = listfile.sheets()[0].col_values(0)
+    kinds = listfile.sheets()[1].col_values(0)
+    company = listfile.sheets()[2].col_values(0)
+
+
     kinds = listfile.sheets()[3].col_values(0)
     company = listfile.sheets()[4].col_values(0)
     trader = listfile.sheets()[5].col_values(0)

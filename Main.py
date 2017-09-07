@@ -18,27 +18,27 @@ resultname, trackname, stddate = get_filename(filename)
 
 ### 打开文件，读取数据 ###
 mainpowder, mainblock, nonmain, kinds, company, trader, powder, block = read_list(listname)
-datafile = xlrd.open_workbook(filename.decode('utf-8'))
-sheets = datafile.sheets()
-judge_merger_cell(sheets, sheetindex)
-owner, goods, amount = read_data(sheets, sheetindex, kinds)
-# 打印输出测试
-#for i in range(1, len(owner.keys())+1):
-#    print '"%d": "%s", "%s", "%d"' % (i, owner[i], goods[i], amount[i])
-
-### 货主、货物名称标准化 ###
-standardize_name(stdname, owner, goods)
-
-### 输出统计及详细数据 ###
-resultfile = xlwt.Workbook()
-totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow = \
-    calculate_summary(mainpowder, mainblock, nonmain, owner, goods, amount, company)
-write_summary(resultfile, mainpowder, mainblock, nonmain, totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow)
-
-write_detail(resultfile, owner, goods, amount)
-resultfile.save(resultname.decode('utf-8'))
-print 'Summary and Detail Results Have Been Written in File "%s".' % resultname.decode('utf-8')
-
+#datafile = xlrd.open_workbook(filename.decode('utf-8'))
+#sheets = datafile.sheets()
+#judge_merger_cell(sheets, sheetindex)
+#owner, goods, amount = read_data(sheets, sheetindex, kinds)
+## 打印输出测试
+##for i in range(1, len(owner.keys())+1):
+##    print '"%d": "%s", "%s", "%d"' % (i, owner[i], goods[i], amount[i])
+#
+#### 货主、货物名称标准化 ###
+#standardize_name(stdname, owner, goods)
+#
+#### 输出统计及详细数据 ###
+#resultfile = xlwt.Workbook()
+#totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow = \
+#    calculate_summary(mainpowder, mainblock, nonmain, owner, goods, amount, company)
+#write_summary(resultfile, mainpowder, mainblock, nonmain, totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow)
+#
+#write_detail(resultfile, owner, goods, amount)
+#resultfile.save(resultname.decode('utf-8'))
+#print 'Summary and Detail Results Have Been Written in File "%s".' % resultname.decode('utf-8')
+#
 ### 输出历史追踪数据 ###
 trackfile, subsheet, rowindex = get_tracking_file(trackname)
 goodsdata = calculate_trackdata(powder, block, goodsrow, owner, goods, amount, company)
