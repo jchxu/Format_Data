@@ -66,7 +66,7 @@ def get_date(filename):
         day = int(date.split('.')[-1])
         std_date = "%02d%02d" % (month, day)
     else:
-        print u"文件名中日期格式不适合，请将日期统一为**.**格式。"
+        print u"文件名中日期格式不适合，请将日期统一为**.**格式."
     #print std_date
     return std_date
 
@@ -84,7 +84,7 @@ def get_filename (filename):
         return (resultname, trackname, stddate)
         #return resultname
     else:
-        print u"未找到文件名港口关键词，请检查文件名。"
+        print u"未找到文件名港口关键词，请检查文件名."
 
 def read_list(listname):
     """读取分类名录文件中的主流粉矿、主流块矿、非主流资源、品种、钢厂、贸易商
@@ -93,14 +93,15 @@ def read_list(listname):
     class_list = listfile.sheets()[0].col_values(0)
     kinds = listfile.sheets()[1].col_values(0)
     company = listfile.sheets()[2].col_values(0)
-    goodslistname = {}
-    goodslist = {}
+    goods_class_name = {}
+    goods_class_list = {}
     for i in range(2, len(class_list)):
-        goodslistname[i-2] = class_list[i]
-        goodslist[i-2] = listfile.sheets()[i+1].col_values(0)
-    for item in class_list:
-        print u'读取"%s"文件中的"%s"清单。' % (listname.decode('utf-8'), item)
-    return (kinds, company, goodslist, goodslistname)
+        goods_class_name[i-2] = class_list[i]
+        goods_class_list[i-2] = listfile.sheets()[i+1].col_values(0)
+    #for item in class_list:
+    #    print u'读取"%s"文件中的"%s"清单.' % (listname.decode('utf-8'), item)
+    print u'已读取"%s"文件中的\033[1;34;0m%d\033[0m个清单.' % (listname.decode('utf-8'), len(class_list))
+    return (kinds, company, goods_class_list, goods_class_name)
 
 def read_data(sheets, sheetindex, kinds):
     """读取子表中的数据行。利用指定的特殊名词判断标题行、货物列、货主列、数量列位置
@@ -148,10 +149,10 @@ def read_data(sheets, sheetindex, kinds):
                     and (not (u"合计" in data[goodsindex])) and isinstance(data[amountindex],float):
                 uncountlist.append(data[goodsindex])
         for item in set(uncountlist):
-            print u'"\033[1;31;0m%s\033[0m"没有统计。若应统计在内，请检查分类名录中的“品种”清单是否包含。' % item
+            print u'"\033[1;31;0m%s\033[0m"没有统计。若应统计在内，请检查分类名录中的“品种”清单是否包含.' % item
 
     ### 返回存储数据的3个字典 ###
-    print u'共计读取\033[1;34;0m%d\033[0m条数据。' % count
+    print u'共计读取\033[1;34;0m%d\033[0m条数据.' % count
     return (owner, goods, amount)
 
 def judge_merger_cell(sheets, sheetindex):

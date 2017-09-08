@@ -168,7 +168,7 @@ def getgoodsamount(goodsname, owner, goods, amount, company):
     traderratio = getratio(traderamount, totalamount)
     return (totalamount, companyamount, companyratio, traderamount, traderratio)
 
-def calculate_summary(owner, goods, amount, company, goodslist, goodslistname):
+def calculate_summary(owner, goods, amount, company, goods_class_list, goods_class_name):
     ### 计算所有货物总和 ###
     totalamount = sum_owner_goods(owner, goods, amount, u"ALL", u"ALL")
     totalcom = 0
@@ -191,9 +191,9 @@ def calculate_summary(owner, goods, amount, company, goodslist, goodslistname):
     goodstraderratio = {}
     goodsrow = {}
     biglist = []
-    for i in range(0, len(goodslistname)):
-        for k in range(0, len(goodslist[i])):
-            biglist.append(goodslist[i][k])
+    for i in range(0, len(goods_class_name)):
+        for k in range(0, len(goods_class_list[i])):
+            biglist.append(goods_class_list[i][k])
     for i in range(0, len(biglist)):
         out = getgoodsamount(biglist[i], owner, goods, amount, company)
         goodstotal[i], goodscom[i], goodscomratio[i], goodstrader[i], goodstraderratio[i] = out
@@ -207,32 +207,32 @@ def calculate_summary(owner, goods, amount, company, goodslist, goodslistname):
     class_comratio = {}
     class_traderratio = {}
     classrow = {}
-    end = len(goodslistname) -1
+    end = len(goods_class_name) -1
     class_total[end] = totalamount
     class_com[end] = totalcom
     class_trader[end] = totaltrader
-    for i in range(0, len(goodslistname)-1):
+    for i in range(0, len(goods_class_name)-1):
         index = 0
         if i > 0:
             for x in range(0, i):
-                index += len(goodslist[x])
+                index += len(goods_class_list[x])
         class_total[i] = 0
         class_com[i] = 0
         class_trader[i] = 0
-        for k in range(0, len(goodslist[i])):
+        for k in range(0, len(goods_class_list[i])):
             class_total[i] += goodstotal[index+k]
             class_com[i] += goodscom[index+k]
             class_trader[i] += goodstrader[index+k]
         class_comratio[i] = getratio(class_com[i], class_total[i])
         class_traderratio[i] = getratio(class_trader[i], class_total[i])
-        classrow[i] = [goodslistname[i], class_total[i], class_com[i], class_comratio[i], class_trader[i], class_traderratio[i]]
+        classrow[i] = [goods_class_name[i], class_total[i], class_com[i], class_comratio[i], class_trader[i], class_traderratio[i]]
         # 最后一个大类（非主流资源）的数据为总量-前面所有分类的量
         class_total[end] -= class_total[i]
         class_com[end] -= class_com[i]
         class_trader[end] -= class_trader[i]
     class_comratio[end] = getratio(class_com[end], class_total[end])
     class_traderratio[end] = getratio(class_trader[end], class_total[end])
-    classrow[end] = [goodslistname[end], class_total[end], class_com[end], class_comratio[end], class_trader[end], class_traderratio[end]]
+    classrow[end] = [goods_class_name[end], class_total[end], class_com[end], class_comratio[end], class_trader[end], class_traderratio[end]]
 
     ### 计算主流资源（分类列表中的前两个） ###
     mainamount = 2
@@ -250,32 +250,39 @@ def calculate_summary(owner, goods, amount, company, goodslist, goodslistname):
 
     return (totalrow, mainrow, classrow, goodsrow)
 
-def write_summary(resultfile, mainpowder, mainblock, nonmain, totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow):
+def write_summary(resultfile, goods_class_list, goods_class_name, totalrow, mainrow, classrow, goodsrow):
     ### 设置输出格式 ###
-    style_title = xlwt.easyxf("font: bold on, color-index blue; alignment: vert center, horz center; pattern: pattern solid, fore_colour light_yellow;")
-
+    style_title = xlwt.easyxf("font: bold on; alignment: vert center, horz center;")
+    style_total = xlwt.easyxf("font: bold on, color-index blue; alignment: vert center, horz center; pattern: pattern solid, fore_colour light_yellow;")
+    style_amount = xlwt.easyxf("alignment: vert center, horz right;", num_format_str='#,##0')
+    style_precent = xlwt.easyxf("alignment: vert center, horz right;", num_format_str='0.00%')
 
 
     subsheet = resultfile.add_sheet("Summary")
     titlerow = [u"矿种", u"合计", u"钢厂", u"钢厂占比", u"贸易商", u"贸易商占比"]
-    powderadd = 5   #从第5行开始写主流粉矿,即主流资源与主流粉矿之间空1行
-    blockadd = 7 + len(mainpowder)  # 加2表示空1行开始写主流块矿。+n表示空n-1行
-    nonmainadd = 9 + len(mainpowder) + len(mainblock)   # 再加2（n）表示空1（n-1）行开始写非主流资源。再+n表示再空n-1行
 
+    powderadd = 5   #从第5行开始写主流粉矿,即主流资源与主流粉矿之间空1行
+    #blockadd = 7 + len(mainpowder)  # 加2表示空1行开始写主流块矿。+n表示空n-1行
+    #nonmainadd = 9 + len(mainpowder) + len(mainblock)   # 再加2（n）表示空1（n-1）行开始写非主流资源。再+n表示再空n-1行
     for i in range(0, len(titlerow)):
         subsheet.write(0, i, titlerow[i], style_title)
-        subsheet.write(1, i, totalrow[i])
-        subsheet.write(2, i, mainrow[i])
-        subsheet.write(powderadd-1, i, powderrow[i])
-        for k in range(0, len(mainpowder)):
-            subsheet.write(powderadd+k, i, goodsrow[k][i])
-        subsheet.write(blockadd-1, i, blockrow[i])
-        for k in range(0, len(mainblock)):
-            subsheet.write(blockadd+k, i, goodsrow[k+len(mainpowder)][i])
-        subsheet.write(nonmainadd-1, i, nonmainrow[i])
-        for k in range(0, len(nonmain)):
-            subsheet.write(nonmainadd+k, i, goodsrow[k+len(mainpowder)+len(mainblock)][i])
-    print 'Summary Data Have Been Written in Subsheet "%s".' % subsheet.name.encode('utf-8')
+        subsheet.write(1, i, totalrow[i], style_total)
+        subsheet.write(3, i, mainrow[i])
+    for k in range(0, len(classrow)):
+        print k, "--------"
+        index = 4
+        if k > 0:
+            for x in range(0, k):
+                index += (len(goods_class_list[x])+1)
+        print index
+        for m in range(0, len(titlerow)):
+            print index+k
+            #subsheet.write(index+k, m, classrow[k][m])
+        for n in range(0, len(goods_class_list)):
+            print index+k+n+1
+            #subsheet.write(index+k+n+1, 0, goodsrow[k][0])
+
+    print u'港口统计信息已写入子表 "%s".' % subsheet.name.encode('utf-8')
     return resultfile
 
 def write_detail(resultfile, owner, goods, amount):
@@ -297,7 +304,7 @@ def write_detail(resultfile, owner, goods, amount):
         subsheet.write(i, 1, owner[i], style_name)
         subsheet.write(i, 2, goods[i], style_name)
         subsheet.write(i, 3, amount[i], style_amount)
-    print 'Detail data have been written in subsheet "%s".' % subsheet.name.encode('utf-8')
+    print u'港口详细信息已写入子表 "%s".' % subsheet.name.encode('utf-8')
     return resultfile
 
 def calculate_trackdata(powder, block, goodsrow, owner, goods, amount, company):
