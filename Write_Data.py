@@ -123,7 +123,7 @@ def standardize_name(stdname, owner, goods):
     for item in goods.keys():
         if goods[item] in goodsdic.keys():
             goods[item] = goodsdic[goods[item]]
-    print "All names of owners and goods have been standardized."
+    print u"货主、货种的名称已替换为标准名称."
     return (owner, goods)
 
 def sum_owner_goods (owner, goods, amount, ownername, goodsname):
@@ -168,8 +168,8 @@ def getgoodsamount(goodsname, owner, goods, amount, company):
     traderratio = getratio(traderamount, totalamount)
     return (totalamount, companyamount, companyratio, traderamount, traderratio)
 
-def calculate_summary(mainpowder, mainblock, nonmain, owner, goods, amount, company):
-    ### 计算所有货物的总和 ###
+def calculate_summary(owner, goods, amount, company, goodslist, goodslistname):
+    ### 计算所有货物总和 ###
     totalamount = sum_owner_goods(owner, goods, amount, u"ALL", u"ALL")
     totalcom = 0
     totaltrader = 0
@@ -178,82 +178,77 @@ def calculate_summary(mainpowder, mainblock, nonmain, owner, goods, amount, comp
             totalcom += sum_owner_goods(owner, goods, amount, item, u"ALL")
         else:
             totaltrader += sum_owner_goods(owner, goods, amount, item, u"ALL")
-    if (totalamount-totalcom-totaltrader) > 1:
-        print "The Lists of Companies and Traders May Be IN-Complete!"
-        for i in range(1, len(owner.keys())+1):
-            if (not (owner[i] in company)) and (not (owner[i] in trader)):
-                print 'No.%d: The "%s" Was Not In the List of Company or Trader!' % (i, owner[i])
-    elif (totalamount-totalcom-totaltrader) < -1:
-        for i in range(1, len(owner.keys())+1):
-            if (owner[i] in company) and (owner[i] in trader):
-                print 'No.%d: The "%s" Was In the List of Company, Meanwhile, In List of Trader!' % (i, owner[i])
     totalcomratio = getratio(totalcom, totalamount)
     totaltraderratio = getratio(totaltrader, totalamount)
     #print totalamount, totalcom, totalcomratio, totaltrader, totaltraderratio
     totalrow = [u"港存总计", totalamount, totalcom, totalcomratio, totaltrader, totaltraderratio]
 
-    ### 计算每种需单独统计的货物的总和 ###
+    ### 计算每种货物总和 ###
     goodstotal = {}
     goodscom = {}
     goodscomratio = {}
     goodstrader = {}
     goodstraderratio = {}
     goodsrow = {}
-    biglist = mainpowder + mainblock + nonmain
+    biglist = []
+    for i in range(0, len(goodslistname)):
+        for k in range(0, len(goodslist[i])):
+            biglist.append(goodslist[i][k])
     for i in range(0, len(biglist)):
         out = getgoodsamount(biglist[i], owner, goods, amount, company)
         goodstotal[i], goodscom[i], goodscomratio[i], goodstrader[i], goodstraderratio[i] = out
         #print goodstotal[i], goodscom[i], goodscomratio[i], goodstrader[i], goodstraderratio[i]
         goodsrow[i] = [biglist[i], goodstotal[i], goodscom[i], goodscomratio[i], goodstrader[i], goodstraderratio[i]]
 
-    ### 计算主流粉矿的总和 ###
-    powdertotal =0
-    powdercom =0
-    powdertrader = 0
-    for i in range(0, len(mainpowder)):
-        powdertotal += goodstotal[i]
-        powdercom += goodscom[i]
-        powdertrader += goodstrader[i]
-    powdercomratio = getratio(powdercom, powdertotal)
-    powdertraderratio = getratio(powdertrader, powdertotal)
-    #print powdertotal, powdercom, powdercomratio, powdertrader, powdertraderratio
-    powderrow = [u"主流粉矿", powdertotal, powdercom, powdercomratio, powdertrader, powdertraderratio]
+    ### 分别统计不同大类情况 ###
+    class_total = {}
+    class_com = {}
+    class_trader = {}
+    class_comratio = {}
+    class_traderratio = {}
+    classrow = {}
+    end = len(goodslistname) -1
+    class_total[end] = totalamount
+    class_com[end] = totalcom
+    class_trader[end] = totaltrader
+    for i in range(0, len(goodslistname)-1):
+        index = 0
+        if i > 0:
+            for x in range(0, i):
+                index += len(goodslist[x])
+        class_total[i] = 0
+        class_com[i] = 0
+        class_trader[i] = 0
+        for k in range(0, len(goodslist[i])):
+            class_total[i] += goodstotal[index+k]
+            class_com[i] += goodscom[index+k]
+            class_trader[i] += goodstrader[index+k]
+        class_comratio[i] = getratio(class_com[i], class_total[i])
+        class_traderratio[i] = getratio(class_trader[i], class_total[i])
+        classrow[i] = [goodslistname[i], class_total[i], class_com[i], class_comratio[i], class_trader[i], class_traderratio[i]]
+        # 最后一个大类（非主流资源）的数据为总量-前面所有分类的量
+        class_total[end] -= class_total[i]
+        class_com[end] -= class_com[i]
+        class_trader[end] -= class_trader[i]
+    class_comratio[end] = getratio(class_com[end], class_total[end])
+    class_traderratio[end] = getratio(class_trader[end], class_total[end])
+    classrow[end] = [goodslistname[end], class_total[end], class_com[end], class_comratio[end], class_trader[end], class_traderratio[end]]
 
-    ### 计算主流块矿的总和 ###
-    blocktotal = 0
-    blockcom = 0
-    blocktrader = 0
-    for i in range(0, len(mainblock)):
-        blocktotal += goodstotal[i+len(mainpowder)]
-        blockcom += goodscom[i+len(mainpowder)]
-        blocktrader += goodstrader[i+len(mainpowder)]
-    blockcomratio = getratio(blockcom, blocktotal)
-    blocktraderratio = getratio(blocktrader, blocktotal)
-    #print blocktotal, blockcom, blockcomratio, blocktrader, blocktraderratio
-    blockrow = [u"主流块矿", blocktotal, blockcom, blockcomratio, blocktrader, blocktraderratio]
-
-    ### 计算主流资源（主流粉矿+主流块矿） ###
-    maintotal = powdertotal + blocktotal
-    maincom = powdercom + blockcom
-    maintrader = powdertrader + blocktrader
+    ### 计算主流资源（分类列表中的前两个） ###
+    mainamount = 2
+    maintotal = 0
+    maincom = 0
+    maintrader = 0
+    for i in range(0, mainamount):
+        maintotal += class_total[i]
+        maincom += class_com[i]
+        maintrader += class_trader[i]
     maincomratio = getratio(maincom, maintotal)
     maintraderratio = getratio(maintrader, maintotal)
     #print maintotal, maincom, maincomratio, maintrader, maintraderratio
     mainrow = [u"主流资源", maintotal, maincom, maincomratio, maintrader, maintraderratio]
 
-    ### 计算非主流资源（总的-主流-乌克兰精粉-乌克兰球团） ###
-    nonmaintotal = totalamount - maintotal - \
-                   goodstotal[len(mainpowder)+len(mainblock)] - goodstotal[len(mainpowder)+len(mainblock)+1]
-    nonmaincom = totalcom - maincom - \
-                   goodscom[len(mainpowder)+len(mainblock)] - goodscom[len(mainpowder)+len(mainblock)+1]
-    nonmaintrader = totaltrader - maintrader - \
-                 goodstrader[len(mainpowder) + len(mainblock)] - goodstrader[len(mainpowder) + len(mainblock) + 1]
-    nonmaincomratio = getratio(nonmaincom, nonmaintotal)
-    nonmaintraderratio = getratio(nonmaintrader, nonmaintotal)
-    #print nonmaintotal, nonmaincom, nonmaincomratio, nonmaintrader, nonmaintraderratio
-    nonmainrow = [u"非主流资源", nonmaintotal, nonmaincom, nonmaincomratio, nonmaintrader, nonmaintraderratio]
-
-    return (totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow)
+    return (totalrow, mainrow, classrow, goodsrow)
 
 def write_summary(resultfile, mainpowder, mainblock, nonmain, totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow):
     ### 设置输出格式 ###

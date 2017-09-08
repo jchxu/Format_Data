@@ -17,23 +17,24 @@ resultname, trackname, stddate = get_filename(filename)
 #resultname = "铁矿港存结构分析-岚桥-0804.xls"   # 用于自定义输出文件的文件名，或get_filename函数出错时使用
 
 ### 打开文件，读取数据 ###
-kinds, company, goodslist = read_list(listname)
+kinds, company, goodslist, goodslistname = read_list(listname)
 #mainpowder, mainblock, nonmain, kinds, company, trader, powder, block = read_list(listname)
 datafile = xlrd.open_workbook(filename.decode('utf-8'))
 sheets = datafile.sheets()
 judge_merger_cell(sheets, sheetindex)
 owner, goods, amount = read_data(sheets, sheetindex, kinds)
-## 打印输出测试
-##for i in range(1, len(owner.keys())+1):
-##    print '"%d": "%s", "%s", "%d"' % (i, owner[i], goods[i], amount[i])
-#
-#### 货主、货物名称标准化 ###
-#standardize_name(stdname, owner, goods)
-#
-#### 输出统计及详细数据 ###
-#resultfile = xlwt.Workbook()
-#totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow = \
-#    calculate_summary(mainpowder, mainblock, nonmain, owner, goods, amount, company)
+### 打印输出测试
+#for item in goodslistname.values():
+#    print "%s" % item
+#for i in range(1, len(owner.keys())+1):
+#    print '"%d": "%s", "%s", "%d"' % (i, owner[i], goods[i], amount[i])
+
+### 货主、货物名称标准化 ###
+standardize_name(stdname, owner, goods)
+
+### 输出统计及详细数据 ###
+resultfile = xlwt.Workbook()
+totalrow, mainrow, classrow, goodsrow = calculate_summary(owner, goods, amount, company, goodslist, goodslistname)
 #write_summary(resultfile, mainpowder, mainblock, nonmain, totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsrow)
 #
 #write_detail(resultfile, owner, goods, amount)
