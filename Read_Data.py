@@ -66,7 +66,7 @@ def get_date(filename):
         day = int(date.split('.')[-1])
         std_date = "%02d%02d" % (month, day)
     else:
-        print "文件名中日期格式不适合，请将日期统一为**.**格式。"
+        print u"文件名中日期格式不适合，请将日期统一为**.**格式。"
     #print std_date
     return std_date
 
@@ -84,7 +84,7 @@ def get_filename (filename):
         return (resultname, trackname, stddate)
         #return resultname
     else:
-        print "未找到文件名港口关键词，请检查文件名。"
+        print u"未找到文件名港口关键词，请检查文件名。"
 
 def read_list(listname):
     """读取分类名录文件中的主流粉矿、主流块矿、非主流资源、品种、钢厂、贸易商
@@ -93,14 +93,14 @@ def read_list(listname):
     class_list = listfile.sheets()[0].col_values(0)
     kinds = listfile.sheets()[1].col_values(0)
     company = listfile.sheets()[2].col_values(0)
-
-
-    kinds = listfile.sheets()[3].col_values(0)
-    company = listfile.sheets()[4].col_values(0)
-    trader = listfile.sheets()[5].col_values(0)
-    powder = listfile.sheets()[6].col_values(0)
-    block = listfile.sheets()[7].col_values(0)
-    return (mainpowder, mainblock, nonmain, kinds, company, trader, powder, block)
+    goodslistname = {}
+    goodslist = {}
+    for i in range(2, len(class_list)):
+        goodslistname[i-2] = class_list[i]
+        goodslist[i-2] = listfile.sheets()[i+1].col_values(0)
+    for item in class_list:
+        print u'读取"%s"文件中的"%s"清单。' % (listname.decode('utf-8'), item)
+    return (kinds, company, goodslist)
 
 def read_data(sheets, sheetindex, kinds):
     """读取子表中的数据行。利用指定的特殊名词判断标题行、货物列、货主列、数量列位置
@@ -135,6 +135,7 @@ def read_data(sheets, sheetindex, kinds):
         #print ownerindex, goodsindex, amountindex
 
         ### 遍历每行，检查是否是所需数据，是则读取入相应字典 ###
+        uncountlist = []
         for k in range(titleindex+1, sheets[i-1].nrows):
             data = sheets[i-1].row_values(k)
             if data[goodsindex] and ((data[goodsindex] in kinds) or (u"精粉" in data[goodsindex]) or (u"球团" in data[goodsindex])) \
@@ -143,6 +144,12 @@ def read_data(sheets, sheetindex, kinds):
                 owner[count] = data[ownerindex]
                 goods[count] = data[goodsindex]
                 amount[count] = data[amountindex]
+            elif data[goodsindex] and (not ((data[goodsindex] in kinds) or (u"精粉" in data[goodsindex]) or (u"球团" in data[goodsindex]))) \
+                    and (not (u"合计" in data[goodsindex])) and isinstance(data[amountindex],float):
+                uncountlist.append(data[goodsindex])
+        for item in set(uncountlist):
+            print u'"%s"没有统计。若应统计在内，请检查分类名录中的“品种”清单是否包含。' % item
+
     ### 返回存储数据的3个字典 ###
     print "A total of %d records have been read." % count
     return (owner, goods, amount)

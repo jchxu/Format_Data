@@ -4,7 +4,7 @@ from Read_Data import *
 from Write_Data import *
 
 ### 需要用户定义的变量 ###
-filename = "京唐港8.1库存.xlsx"   # Excel数据文件的文件名，带扩展名。
+filename = "岚桥铁矿砂库存表0804.xls"   # Excel数据文件的文件名，带扩展名。
 sheetindex = [1]  # 需要读取的子表序号(第几个)，有多个时以英文逗号,间隔。
 
 # 相对固定的设置，如有改动，需相应改变设置
@@ -17,11 +17,12 @@ resultname, trackname, stddate = get_filename(filename)
 #resultname = "铁矿港存结构分析-岚桥-0804.xls"   # 用于自定义输出文件的文件名，或get_filename函数出错时使用
 
 ### 打开文件，读取数据 ###
-mainpowder, mainblock, nonmain, kinds, company, trader, powder, block = read_list(listname)
-#datafile = xlrd.open_workbook(filename.decode('utf-8'))
-#sheets = datafile.sheets()
-#judge_merger_cell(sheets, sheetindex)
-#owner, goods, amount = read_data(sheets, sheetindex, kinds)
+kinds, company, goodslist = read_list(listname)
+#mainpowder, mainblock, nonmain, kinds, company, trader, powder, block = read_list(listname)
+datafile = xlrd.open_workbook(filename.decode('utf-8'))
+sheets = datafile.sheets()
+judge_merger_cell(sheets, sheetindex)
+owner, goods, amount = read_data(sheets, sheetindex, kinds)
 ## 打印输出测试
 ##for i in range(1, len(owner.keys())+1):
 ##    print '"%d": "%s", "%s", "%d"' % (i, owner[i], goods[i], amount[i])
@@ -40,8 +41,8 @@ mainpowder, mainblock, nonmain, kinds, company, trader, powder, block = read_lis
 #print 'Summary and Detail Results Have Been Written in File "%s".' % resultname.decode('utf-8')
 #
 ### 输出历史追踪数据 ###
-trackfile, subsheet, rowindex = get_tracking_file(trackname)
-goodsdata = calculate_trackdata(powder, block, goodsrow, owner, goods, amount, company)
-write_tracking(stddate, trackfile, subsheet, rowindex, powder, block, totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsdata)
-trackfile.save(trackname.decode('utf-8'))
-print 'Tracking Results Have Been Written in File "%s".' % trackname.decode('utf-8')
+#trackfile, subsheet, rowindex = get_tracking_file(trackname)
+#goodsdata = calculate_trackdata(powder, block, goodsrow, owner, goods, amount, company)
+#write_tracking(stddate, trackfile, subsheet, rowindex, powder, block, totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsdata)
+#trackfile.save(trackname.decode('utf-8'))
+#print 'Tracking Results Have Been Written in File "%s".' % trackname.decode('utf-8')
