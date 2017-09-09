@@ -35,10 +35,10 @@ standardize_name(stdname, owner, goods)
 ### 输出统计及详细数据 ###
 resultfile = xlwt.Workbook()
 totalrow, mainrow, classrow, goodsrow = calculate_summary(owner, goods, amount, company, goods_class_list, goods_class_name)
-write_summary(resultfile, goods_class_list, goods_class_name, totalrow, mainrow, classrow, goodsrow)
+write_summary(resultfile, goods_class_list, totalrow, mainrow, classrow, goodsrow)
 write_detail(resultfile, owner, goods, amount)
 resultfile.save(resultname.decode('utf-8'))
-print u'港口统计及详细信息已写入 "%s" 文件.' % resultname.decode('utf-8')
+print u'港口统计及详细信息已写入"\033[1;34;0m%s\033[0m"文件.' % resultname.decode('utf-8')
 #
 ### 输出历史追踪数据 ###
 #trackfile, subsheet, rowindex = get_tracking_file(trackname)

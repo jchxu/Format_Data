@@ -250,39 +250,57 @@ def calculate_summary(owner, goods, amount, company, goods_class_list, goods_cla
 
     return (totalrow, mainrow, classrow, goodsrow)
 
-def write_summary(resultfile, goods_class_list, goods_class_name, totalrow, mainrow, classrow, goodsrow):
-    ### 设置输出格式 ###
-    style_title = xlwt.easyxf("font: bold on; alignment: vert center, horz center;")
-    style_total = xlwt.easyxf("font: bold on, color-index blue; alignment: vert center, horz center; pattern: pattern solid, fore_colour light_yellow;")
-    style_amount = xlwt.easyxf("alignment: vert center, horz right;", num_format_str='#,##0')
-    style_precent = xlwt.easyxf("alignment: vert center, horz right;", num_format_str='0.00%')
+def summary_style(level, num):
+    if level == 'total' and num == 0:
+        style = xlwt.easyxf("font: bold on, color-index blue; alignment: vert center, horz left; pattern: pattern solid, fore_colour light_yellow;")
+    elif level == 'total' and num in [1, 2, 4]:
+        style = xlwt.easyxf("font: bold on, color-index blue; alignment: vert center, horz right; pattern: pattern solid, fore_colour light_yellow;", num_format_str='#,##0')
+    elif level == 'total' and num in [3, 5]:
+        style = xlwt.easyxf("font: bold on, color-index blue; alignment: vert center, horz center; pattern: pattern solid, fore_colour light_yellow;", num_format_str='0.00%')
+    elif level == 'title1' and num == 0:
+        style = xlwt.easyxf("font: bold off; alignment: vert center, horz left; pattern: pattern solid, fore_colour ice_blue;")
+    elif level == 'title1' and num in [1,2,4]:
+        style = xlwt.easyxf("font: bold off; alignment: vert center, horz right; pattern: pattern solid, fore_colour ice_blue;", num_format_str='#,##0')
+    elif level == 'title1' and num in [3,5]:
+        style = xlwt.easyxf("font: bold off; alignment: vert center, horz center; pattern: pattern solid, fore_colour ice_blue;", num_format_str='0.00%')
+    elif level == 'title2' and num == 0:
+        style = xlwt.easyxf("font: bold on, color-index white; alignment: vert center, horz left; pattern: pattern solid, fore_colour light_blue;")
+    elif level == 'title2' and num in [1,2,4]:
+        style = xlwt.easyxf("font: bold on, color-index white; alignment: vert center, horz right; pattern: pattern solid, fore_colour light_blue;", num_format_str='#,##0')
+    elif level == 'title2' and num in [3,5]:
+        style = xlwt.easyxf("font: bold on, color-index white; alignment: vert center, horz center; pattern: pattern solid, fore_colour light_blue;", num_format_str='0.00%')
+    elif level == 'goods' and num == 0:
+        style = xlwt.easyxf("alignment: vert center, horz left;")
+    elif level == 'goods' and num in [1,2,4]:
+        style = xlwt.easyxf("alignment: vert center, horz right;", num_format_str='#,##0')
+    elif level == 'goods' and num in [3,5]:
+        style = xlwt.easyxf("alignment: vert center, horz center;", num_format_str='0.00%')
+    return style
 
-
+def write_summary(resultfile, goods_class_list, totalrow, mainrow, classrow, goodsrow):
     subsheet = resultfile.add_sheet("Summary")
     titlerow = [u"矿种", u"合计", u"钢厂", u"钢厂占比", u"贸易商", u"贸易商占比"]
-
-    powderadd = 5   #从第5行开始写主流粉矿,即主流资源与主流粉矿之间空1行
-    #blockadd = 7 + len(mainpowder)  # 加2表示空1行开始写主流块矿。+n表示空n-1行
-    #nonmainadd = 9 + len(mainpowder) + len(mainblock)   # 再加2（n）表示空1（n-1）行开始写非主流资源。再+n表示再空n-1行
     for i in range(0, len(titlerow)):
-        subsheet.write(0, i, titlerow[i], style_title)
-        subsheet.write(1, i, totalrow[i], style_total)
-        subsheet.write(3, i, mainrow[i])
+        subsheet.write(0, i, titlerow[i], xlwt.easyxf("font: bold on; alignment: vert center, horz center;"))
+        subsheet.write(1, i, totalrow[i], summary_style('total', i))
+        subsheet.write(2, i, mainrow[i], summary_style('title2', i))
     for k in range(0, len(classrow)):
-        print k, "--------"
-        index = 4
+        index = 3   # 仅比mainrow大1，表示紧挨着下一行写数据；若有空1行，则index=4
+        index2 = 0
         if k > 0:
             for x in range(0, k):
-                index += (len(goods_class_list[x])+1)
-        print index
+                index += (len(goods_class_list[x])+2)
+                index2 += len(goods_class_list[x])
         for m in range(0, len(titlerow)):
-            print index+k
-            #subsheet.write(index+k, m, classrow[k][m])
-        for n in range(0, len(goods_class_list)):
-            print index+k+n+1
-            #subsheet.write(index+k+n+1, 0, goodsrow[k][0])
+            if k == len(classrow)-1:
+                subsheet.write(index, m, classrow[k][m], summary_style('title2', m))
+            else:
+                subsheet.write(index, m, classrow[k][m], summary_style('title1', m))
+        for n in range(0, len(goods_class_list[k])):
+            for y in range(0, len(titlerow)):
+                subsheet.write(index+n+1, y, goodsrow[index2+n][y], summary_style('goods', y))
 
-    print u'港口统计信息已写入子表 "%s".' % subsheet.name.encode('utf-8')
+    print u'港口统计信息已写入子表"\033[1;34;0m%s\033[0m".' % subsheet.name.encode('utf-8')
     return resultfile
 
 def write_detail(resultfile, owner, goods, amount):
@@ -304,7 +322,7 @@ def write_detail(resultfile, owner, goods, amount):
         subsheet.write(i, 1, owner[i], style_name)
         subsheet.write(i, 2, goods[i], style_name)
         subsheet.write(i, 3, amount[i], style_amount)
-    print u'港口详细信息已写入子表 "%s".' % subsheet.name.encode('utf-8')
+    print u'港口详细信息已写入子表"\033[1;34;0m%s\033[0m".' % subsheet.name.encode('utf-8')
     return resultfile
 
 def calculate_trackdata(powder, block, goodsrow, owner, goods, amount, company):
