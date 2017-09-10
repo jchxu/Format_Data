@@ -34,11 +34,15 @@ def get_tracking_file(trackname):
         trackfile = copy(originfile)
         subsheet = trackfile.get_sheet(0)
         rowindex = originfile.sheets()[0].nrows
+        olddate = {}
+        for i in range(5, rowindex):
+            olddate[5] = originfile.sheets()[0].cell_value(i, 0)
     else:
         trackfile = xlwt.Workbook()
         subsheet = trackfile.add_sheet("Tracking Data")
         rowindex = 0
-    return (trackfile, subsheet, rowindex)
+        olddate = {}
+    return (trackfile, subsheet, rowindex, olddate)
 
 def get_date_time():
     now_time = datetime.datetime.now()

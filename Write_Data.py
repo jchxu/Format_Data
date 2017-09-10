@@ -1,5 +1,6 @@
 # coding=utf-8
 import xlrd, xlwt, re
+from os import path
 from Read_Data import *
 from xlutils.display import *
 
@@ -149,7 +150,7 @@ def sum_owner_goods (owner, goods, amount, ownername, goodsname):
 
 def getratio(numa, numb):
     """判断numa是否为0，然后计算numa / numb"""
-    if numa != 0:
+    if numa != 0.0 and numb != 0.0 :
         return numa/numb
     else:
         return "/"
@@ -292,15 +293,15 @@ def write_summary(resultfile, goods_class_list, totalrow, mainrow, classrow, goo
                 index += (len(goods_class_list[x])+2)
                 index2 += len(goods_class_list[x])
         for m in range(0, len(titlerow)):
-            if k == len(classrow)-1:
-                subsheet.write(index, m, classrow[k][m], summary_style('title2', m))
-            else:
+            if k != len(classrow)-1:
                 subsheet.write(index, m, classrow[k][m], summary_style('title1', m))
+            else:
+                subsheet.write(index, m, classrow[k][m], summary_style('title2', m))
         for n in range(0, len(goods_class_list[k])):
             for y in range(0, len(titlerow)):
                 subsheet.write(index+n+1, y, goodsrow[index2+n][y], summary_style('goods', y))
 
-    print u'港口统计信息已写入子表"\033[1;34;0m%s\033[0m".' % subsheet.name.encode('utf-8')
+    print u'统计信息已写入子表"\033[1;34;0m%s\033[0m".' % subsheet.name.encode('utf-8')
     return resultfile
 
 def write_detail(resultfile, owner, goods, amount):
@@ -322,7 +323,7 @@ def write_detail(resultfile, owner, goods, amount):
         subsheet.write(i, 1, owner[i], style_name)
         subsheet.write(i, 2, goods[i], style_name)
         subsheet.write(i, 3, amount[i], style_amount)
-    print u'港口详细信息已写入子表"\033[1;34;0m%s\033[0m".' % subsheet.name.encode('utf-8')
+    print u'详细信息已写入子表"\033[1;34;0m%s\033[0m".' % subsheet.name.encode('utf-8')
     return resultfile
 
 def calculate_trackdata(powder, block, goodsrow, owner, goods, amount, company):
@@ -341,97 +342,106 @@ def calculate_trackdata(powder, block, goodsrow, owner, goods, amount, company):
             goodsdata[i] = list(getgoodsamount(goodslist[i], owner, goods, amount, company))
     return goodsdata
 
-def write_tracking(stddate, trackfile, subsheet, rowindex, powder, block, totalrow, mainrow, nonmainrow, powderrow, blockrow, goodsdata):
+def set_row(index):
+    dic = {}
+    if index == 1:
+        return 2
+    elif index in [2,3,4,5]:
+        return index+2
+
+def track_style(num):
+    if num in [2,4]:
+        style = xlwt.easyxf("alignment: vert center, horz right;", num_format_str='#,##0')
+    elif num in [3,5]:
+        style = xlwt.easyxf("alignment: vert center, horz center;", num_format_str='0.00%')
+    return style
+
+def write_tracking(tracklist, stddate, olddate, trackfile, subsheet, rowindex, goods_class_name, goods_class_list, totalrow, mainrow, classrow, goodsrow):
     """追加输出历史追踪数据"""
-    # 标题部分
-    titleflag = 0
-    if rowindex == 0:
-        titleflag = 1
-        rowindex += 4
-        subsheet.write_merge(0, rowindex, 0, 0, u"日期")
-        subsheet.write_merge(0, rowindex, 1, 1, u"总库存")
-        subsheet.write_merge(1, rowindex, 2, 2, u"主流")
-        subsheet.write(rowindex, 3, u"主流占比")
-        subsheet.write_merge(2, rowindex, 4, 4, u"粉矿")
-        subsheet.write(rowindex, 5, u"粉矿占比")
-        for i in range(0, len(powder)):
-            subsheet.write_merge(3, rowindex, 6 + i * 6, 6 + i * 6, powder[i])
-            subsheet.write(rowindex, 7 + i * 6, powder[i]+u"占比")
-            subsheet.write(rowindex, 8 + i * 6, u"钢厂"+powder[i])
-            subsheet.write(rowindex, 9 + i * 6, u"钢厂"+powder[i]+u"占比")
-            subsheet.write(rowindex, 10 + i * 6, u"贸易商"+powder[i])
-            subsheet.write(rowindex, 11 + i * 6, u"贸易商"+powder[i]+u"占比")
-        subsheet.write_merge(2, rowindex, 6+6*len(powder), 6+6*len(powder), u"块矿")
-        subsheet.write(rowindex, 7+6*len(powder), u"块矿占比")
-        for i in range(0, len(block)):
-            subsheet.write_merge(3, rowindex, 8+6*len(powder) + i * 6, 8+6*len(powder) + i * 6, block[i])
-            subsheet.write(rowindex, 9+6*len(powder) + i * 6, block[i]+u"占比")
-            subsheet.write(rowindex, 10+6*len(powder) + i * 6, u"钢厂"+block[i])
-            subsheet.write(rowindex, 11+6*len(powder) + i * 6, u"钢厂"+block[i]+u"占比")
-            subsheet.write(rowindex, 12+6*len(powder) + i * 6, u"贸易商"+block[i])
-            subsheet.write(rowindex, 13+6*len(powder) + i * 6, u"贸易商"+block[i]+u"占比")
-        subsheet.write_merge(2, rowindex, 8 + 6 * (len(powder)+len(block)), 8 + 6 * (len(powder)+len(block)), u"钢厂资源")
-        subsheet.write(rowindex, 9 + 6 * (len(powder)+len(block)), u"钢厂占比")
-        subsheet.write_merge(2, rowindex, 10 + 6 * (len(powder)+len(block)), 10 + 6 * (len(powder)+len(block)), u"贸易商资源")
-        subsheet.write(rowindex, 11 + 6 * (len(powder)+len(block)), u"贸易商占比")
-        subsheet.write_merge(1, rowindex, 12 + 6 * (len(powder) + len(block)), 12 + 6 * (len(powder) + len(block)), u"非主流")
-        subsheet.write_merge(2, rowindex, 13 + 6 * (len(powder) + len(block)), 13 + 6 * (len(powder) + len(block)), u"钢厂资源")
-        subsheet.write(rowindex, 14 + 6 * (len(powder) + len(block)), u"钢厂占比")
-        subsheet.write_merge(2, rowindex, 15 + 6 * (len(powder) + len(block)), 15 + 6 * (len(powder) + len(block)), u"贸易商资源")
-        subsheet.write(rowindex, 16 + 6 * (len(powder) + len(block)), u"贸易商占比")
-        rowindex += 1
+    # 判断是否有追踪数据的品种清单。若有，则按清单追踪；如无，则追踪所有大类品种。
+    mainamount = 2
+    style_num = xlwt.easyxf("alignment: vert center, horz right;", num_format_str='#,##0')
+    style_precent = xlwt.easyxf("alignment: vert center, horz center;", num_format_str='0.00%')
+    style_title = xlwt.easyxf("font: bold on; alignment: vert center, horz left;")
+    if path.exists(tracklist.decode('utf-8')):
+        print
+    else:
+        print
+
     # 数据部分
+    if rowindex == 0:
+        writeindex = 5
+    else:
+        writeindex = rowindex
     year = get_date_time()[1]
     month = stddate[0:2]
     day = stddate[2:4]
     date = "%4s/%2s/%2s" % (year, month, day)
-    subsheet.write(rowindex, 0, date)
-    subsheet.write(rowindex, 1, totalrow[1])
-    subsheet.write(rowindex, 2, mainrow[1])
-    subsheet.write(rowindex, 3, getratio(mainrow[1], totalrow[1]))
-    subsheet.write(rowindex, 4, powderrow[1])
-    subsheet.write(rowindex, 5, getratio(powderrow[1], mainrow[1]))
-    for i in range(0, len(powder)):
-        subsheet.write(rowindex, 6 + i * 6, goodsdata[i][0])
-        subsheet.write(rowindex, 7 + i * 6, getratio(goodsdata[i][0], powderrow[1]))
-        subsheet.write(rowindex, 8 + i * 6, goodsdata[i][1])
-        subsheet.write(rowindex, 9 + i * 6, goodsdata[i][2])
-        subsheet.write(rowindex, 10 + i * 6, goodsdata[i][3])
-        subsheet.write(rowindex, 11 + i * 6, goodsdata[i][4])
-    subsheet.write(rowindex, 6 + 6 * len(powder), blockrow[1])
-    subsheet.write(rowindex, 7 + 6 * len(powder), getratio(blockrow[1], mainrow[1]))
-    for i in range(len(powder), (len(powder)+len(block))):
-        subsheet.write(rowindex, 8 + 6 * i, goodsdata[i][0])
-        subsheet.write(rowindex, 9 + 6 * i, getratio(goodsdata[i][0], blockrow[1]))
-        subsheet.write(rowindex, 10 + 6 * i, goodsdata[i][1])
-        subsheet.write(rowindex, 11 + 6 * i, goodsdata[i][2])
-        subsheet.write(rowindex, 12 + 6 * i, goodsdata[i][3])
-        subsheet.write(rowindex, 13 + 6 * i, goodsdata[i][4])
-    subsheet.write(rowindex, 8 + 6 * (len(powder) + len(block)), mainrow[2])
-    subsheet.write(rowindex, 9 + 6 * (len(powder) + len(block)), mainrow[3])
-    subsheet.write(rowindex, 10 + 6 * (len(powder) + len(block)), mainrow[4])
-    subsheet.write(rowindex, 11 + 6 * (len(powder) + len(block)), mainrow[5])
-    subsheet.write(rowindex, 12 + 6 * (len(powder) + len(block)), nonmainrow[1])
-    subsheet.write(rowindex, 13 + 6 * (len(powder) + len(block)), nonmainrow[2])
-    subsheet.write(rowindex, 14 + 6 * (len(powder) + len(block)), nonmainrow[3])
-    subsheet.write(rowindex, 15 + 6 * (len(powder) + len(block)), nonmainrow[4])
-    subsheet.write(rowindex, 16 + 6 * (len(powder) + len(block)), nonmainrow[5])
+    #print olddate
+    #for i in olddate.keys():
+    #    if date == olddate[i]:
+    #        writeindex = i
+    subsheet.write(writeindex, 0, date)
+    subsheet.write(writeindex, 1, totalrow[1], style_num)
+    for i in range(1, 6):
+        if i == 1:
+            subsheet.write(writeindex, set_row(i), mainrow[i], style_num)
+            subsheet.write(writeindex, set_row(i)+1, getratio(mainrow[1], totalrow[1]), style_precent)
+        else:
+            subsheet.write(writeindex, set_row(i), mainrow[i], track_style(i))
+    for i in range(0, len(classrow)):
+        index = 8
+        index2 = 0
+        if i > 0:
+            for x in range(0, i):
+                index += (len(goods_class_list[x])*6)+1
+                index2 += len(goods_class_list[x])
+        if i < mainamount:
+            subsheet.write(writeindex, index+i, classrow[i][1], style_num)
+            subsheet.write(writeindex, index+i+1, getratio(classrow[i][1], mainrow[1]), style_precent)
+        elif i != len(classrow)-1:
+            subsheet.write(writeindex, index+i, classrow[i][1], style_num)
+            subsheet.write(writeindex, index+i+1, getratio(classrow[i][1], totalrow[1]), style_precent)
+        else:
+            subsheet.write(writeindex, index+i, classrow[i][1], style_num)
+            subsheet.write(writeindex, index+i+1, getratio(classrow[i][1], totalrow[1]), style_precent)
+        for k in range(0, len(goods_class_list[i])):
+            subsheet.write(writeindex, index+i+2+(6*k), goodsrow[index2+k][1], style_num)
+            subsheet.write(writeindex, index+i+2+(6*k)+1, getratio(goodsrow[index2+k][1], classrow[i][1]), style_precent)
+            subsheet.write(writeindex, index+i+2+(6*k)+2, goodsrow[index2+k][2], style_num)
+            subsheet.write(writeindex, index+i+2+(6*k)+3, goodsrow[index2+k][3], style_precent)
+            subsheet.write(writeindex, index+i+2+(6*k)+4, goodsrow[index2+k][4], style_num)
+            subsheet.write(writeindex, index+i+2+(6*k)+5, goodsrow[index2+k][5], style_precent)
 
-    # 合并标题单元格
-    if titleflag == 0:
-        subsheet.write_merge(0, 4, 0, 0, u"日期")
-        subsheet.write_merge(0, 4, 1, 1, u"总库存")
-        subsheet.write_merge(1, 4, 2, 2, u"主流")
-        subsheet.write_merge(2, 4, 4, 4, u"粉矿")
-        for i in range(0, len(powder)):
-            subsheet.write_merge(3, 4, 6 + i * 6, 6 + i * 6, powder[i])
-        subsheet.write_merge(2, 4, 6 + 6 * len(powder), 6 + 6 * len(powder), u"块矿")
-        for i in range(0, len(block)):
-            subsheet.write_merge(3, 4, 8 + 6 * len(powder) + i * 6, 8 + 6 * len(powder) + i * 6, block[i])
-        subsheet.write_merge(2, 4, 8 + 6 * (len(powder) + len(block)), 8 + 6 * (len(powder) + len(block)), u"钢厂资源")
-        subsheet.write_merge(2, 4, 10 + 6 * (len(powder) + len(block)), 10 + 6 * (len(powder) + len(block)), u"贸易商资源")
-        subsheet.write_merge(1, 4, 12 + 6 * (len(powder) + len(block)), 12 + 6 * (len(powder) + len(block)), u"非主流")
-        subsheet.write_merge(2, 4, 13 + 6 * (len(powder) + len(block)), 13 + 6 * (len(powder) + len(block)), u"钢厂资源")
-        subsheet.write_merge(2, 4, 15 + 6 * (len(powder) + len(block)), 15 + 6 * (len(powder) + len(block)), u"贸易商资源")
+        # 标题部分
+    titleindex = 4
+    subsheet.write_merge(0, titleindex, 0, 0, u"日期", style_title)
+    subsheet.write_merge(0, titleindex, 1, 1, u"总库存", style_title)
+    subsheet.write_merge(1, titleindex, 2, 2, mainrow[0], style_title)
+    subsheet.write(titleindex, 3, u"占比", style_title)
+    subsheet.write_merge(3, titleindex, 4, 4, u"钢厂", style_title)
+    subsheet.write(titleindex, 5, u"钢厂占比", style_title)
+    subsheet.write_merge(3, titleindex, 6, 6, u"贸易商", style_title)
+    subsheet.write(titleindex, 7, u"贸易商占比", style_title)
+    for i in range(0, len(classrow)):
+        index = 8  # 前8列标题已指定
+        index2 = 0
+        if i > 0:
+            for x in range(0, i):
+                index += (len(goods_class_list[x])*6)+1
+                index2 += len(goods_class_list[x])
+        if i != len(classrow)-1:
+            subsheet.write_merge(2, titleindex, index+i, index+i, classrow[i][0], style_title)
+            subsheet.write(titleindex, index+i+1, u"占比", style_title)
+        else:
+            subsheet.write_merge(1, titleindex, index+i, index+i, classrow[i][0], style_title)
+            subsheet.write(titleindex, index+i+1, u"占比", style_title)
+        for k in range(0, len(goods_class_list[i])):
+            subsheet.write_merge(3, titleindex, index+i+2+(6*k), index+i+2+(6*k), goodsrow[index2+k][0], style_title)
+            subsheet.write(titleindex, index+i+2+(6*k)+1, goodsrow[index2+k][0]+u"占比", style_title)
+            subsheet.write(titleindex, index+i+2+(6*k)+2, u"钢厂", style_title)
+            subsheet.write(titleindex, index+i+2+(6*k)+3, u"钢厂占比", style_title)
+            subsheet.write(titleindex, index+i+2+(6*k)+4, u"贸易商", style_title)
+            subsheet.write(titleindex, index+i+2+(6*k)+5, u"贸易商占比", style_title)
 
-    return trackfile
+    return (trackfile, writeindex)
