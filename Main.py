@@ -37,9 +37,9 @@ standardize_name(stdname, owner, goods)
 resultfile = xlwt.Workbook()
 totalrow, mainrow, classrow, goodsrow = calculate_summary(owner, goods, amount, company, goods_class_list, goods_class_name)
 print u'统计及详细信息将写入"\033[1;34;0m%s\033[0m"文件.' % resultname.decode('utf-8')
-#write_summary(resultfile, goods_class_list, totalrow, mainrow, classrow, goodsrow)
-#write_detail(resultfile, owner, goods, amount)
-#resultfile.save(resultname.decode('utf-8'))
+write_summary(resultfile, goods_class_list, totalrow, mainrow, classrow, goodsrow)
+write_detail(resultfile, owner, goods, amount)
+resultfile.save(resultname.decode('utf-8'))
 
 
 ### 输出历史追踪数据 ###
