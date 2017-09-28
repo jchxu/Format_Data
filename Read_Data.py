@@ -135,7 +135,7 @@ def read_data(sheets, sheetindex, kinds):
                 goodsindex = k
             elif title[k] in [u"货主"] or (u"收货人" in title[k]) or (u"钢厂" in title[k]):
                 ownerindex = k
-            elif title[k] in [u"结 存 量", u"库存", u"港存数"] or u"数量" in title[k]:
+            elif title[k] in [u"结 存 量", u"库存", u"港存数", u"结存"] or u"数量" in title[k]:
                 amountindex = k
         #print ownerindex, goodsindex, amountindex
 
@@ -144,7 +144,7 @@ def read_data(sheets, sheetindex, kinds):
         for k in range(titleindex+1, sheets[i-1].nrows):
             data = sheets[i-1].row_values(k)
             if data[goodsindex] and ((data[goodsindex] in kinds) or (u"精粉" in data[goodsindex]) or (u"球团" in data[goodsindex])) \
-                    and (not (u"合计" in data[goodsindex])) and isinstance(data[amountindex],float): #判断货物和数量列是否有数据，不是合计的数据，是在品种清单中的货物。
+                    and (not (u"合计" in data[goodsindex])) and isinstance(data[amountindex],float) and (data[amountindex] > 0): #判断货物和数量列是否有数据，不是合计的数据，是在品种清单中的货物。
                 count += 1
                 owner[count] = data[ownerindex]
                 goods[count] = data[goodsindex]
