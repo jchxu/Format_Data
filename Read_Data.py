@@ -1,7 +1,7 @@
 # coding=utf-8
 import xlrd, xlwt, re, datetime
 from xlutils.copy import copy
-from os import path
+from os import path, listdir
 
 """
 get_tracking_file
@@ -184,3 +184,12 @@ def read_merge_cell(sheets):
                         count += 1
     print "A total of %d mergerd cells found." % count
     return (mergedict, count)
+
+def getCustomFiles(prefix, path):
+    allfiles = listdir(path)
+    filelist = []
+    for item in allfiles:
+        if prefix in item.decode('gb2312'):
+            #print item.decode('gb2312')
+            filelist.append(item.decode('gb2312'))
+    return filelist

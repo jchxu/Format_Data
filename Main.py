@@ -4,7 +4,7 @@ from Read_Data import *
 from Write_Data import *
 
 ### 需要用户定义的变量 ###
-filename = "岚桥铁矿砂库存表0804.xls"   # Excel数据文件的文件名，带扩展名。
+filename = "连云港贸易矿8.1.xls"   # Excel数据文件的文件名，带扩展名。
 sheetindex = [1]  # 需要读取的子表序号(第几个)，有多个时以英文逗号,间隔。
 
 # 相对固定的设置，如有改动，需相应改变设置
