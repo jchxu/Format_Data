@@ -193,3 +193,49 @@ def getCustomFiles(prefix, path):
             #print item.decode('gb2312')
             filelist.append(item.decode('gb2312'))
     return filelist
+
+def classbydate(files):
+    dates = []
+    date_files = {}
+    for item in files:
+        filename = item.strip('.xls').split('-')
+        dates.append(filename[2].encode('utf-8'))
+    #print dates
+    #print list(set(dates))
+    for item in list(set(dates)):
+        lists = []
+        for portfile in files:
+            filename = portfile.strip('.xls').split('-')
+            if item == filename[-1].encode('utf-8'):
+                lists.append(portfile)
+        date_files[item] = lists
+    return date_files
+
+def get_sum_date(whichdate, filedict):
+    port = {}
+    owner = {}
+    goods = {}
+    amount = {}
+    count = 0
+    if whichdate:
+        for i in range(0, len(filedict[whichdate])):
+            filename = filedict[whichdate][i]
+            port[i] = filename.split('-')[1]
+            workbook = xlrd.open_workbook(filename, 'r')
+            for j in range(1, len(workbook.sheets()[1].col_values(0))):
+                owner[count] = workbook.sheets()[1].cell_value(j, 1)
+                goods[count] = workbook.sheets()[1].cell_value(j, 2)
+                amount[count] = workbook.sheets()[1].cell_value(j, 3)
+                count += 1
+    else:
+        for item in filedict.keys():
+            for i in range(0, len(filedict[item])):
+                filename = filedict[item][i]
+                port[i] = filename.split('-')[1]
+                workbook = xlrd.open_workbook(filename, 'r')
+                for j in range(1, len(workbook.sheets()[1].col_values(0))):
+                    owner[count] = workbook.sheets()[1].cell_value(j, 1)
+                    goods[count] = workbook.sheets()[1].cell_value(j, 2)
+                    amount[count] = workbook.sheets()[1].cell_value(j, 3)
+                    count += 1
+    return port, owner, goods, amount
