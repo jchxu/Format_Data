@@ -326,157 +326,6 @@ def write_detail(resultfile, owner, goods, amount):
     print u'详细信息已写入子表"\033[1;34;0m%s\033[0m".' % subsheet.name.encode('utf-8')
     return resultfile
 
-def calculate_sum_summary(dates, owner0, goods0, amount0, company, goods_class_list, goods_class_name):
-    totalrow = {}
-    mainrow = {}
-    classrow = {}
-    goodsrow = {}
-    ### 根据不同日期分组保存数据 ###
-    for index in range(0, len(dates.keys())):
-        owner = {}
-        goods = {}
-        amount = {}
-        lowindex = 0
-        dateitem = dates.keys()[index]
-        if index > 0:
-            for i in range(0, index):
-                lowindex += dates[dates.keys()[i]]
-        #print lowindex, lowindex+dates[dateitem]
-        for i in range(lowindex, lowindex+dates[dateitem]):
-            owner[i-lowindex] = owner0[i]
-            goods[i-lowindex] = goods0[i]
-            amount[i-lowindex] = amount0[i]
-        ### 计算所有货物总和 ###
-        totalamount = sum_owner_goods(owner, goods, amount, u"ALL", u"ALL")
-        totalcom = 0
-        totaltrader = 0
-        for item in set(owner.values()):
-            if item in company:
-                totalcom += sum_owner_goods(owner, goods, amount, item, u"ALL")
-            else:
-                totaltrader += sum_owner_goods(owner, goods, amount, item, u"ALL")
-        totalcomratio = getratio(totalcom, totalamount)
-        totaltraderratio = getratio(totaltrader, totalamount)
-        #print totalamount, totalcom, totalcomratio, totaltrader, totaltraderratio
-        totalrow[dateitem] = [u"港存总计", totalamount, totalcom, totalcomratio, totaltrader, totaltraderratio]
-        ### 计算每种货物总和 ###
-        goodstotal = {}
-        goodscom = {}
-        goodscomratio = {}
-        goodstrader = {}
-        goodstraderratio = {}
-        goodsrow0 = {}
-        biglist = []
-        for i in range(0, len(goods_class_name)):
-            for k in range(0, len(goods_class_list[i])):
-                biglist.append(goods_class_list[i][k])
-        for i in range(0, len(biglist)):
-            out = getgoodsamount(biglist[i], owner, goods, amount, company)
-            goodstotal[i], goodscom[i], goodscomratio[i], goodstrader[i], goodstraderratio[i] = out
-            #print goodstotal[i], goodscom[i], goodscomratio[i], goodstrader[i], goodstraderratio[i]
-            goodsrow0[i] = [biglist[i], goodstotal[i], goodscom[i], goodscomratio[i], goodstrader[i], goodstraderratio[i]]
-        goodsrow[dateitem] = goodsrow0
-        ### 分别统计不同大类情况 ###
-        class_total = {}
-        class_com = {}
-        class_trader = {}
-        class_comratio = {}
-        class_traderratio = {}
-        classrow0 = {}
-        end = len(goods_class_name) -1
-        class_total[end] = totalamount
-        class_com[end] = totalcom
-        class_trader[end] = totaltrader
-        for i in range(0, len(goods_class_name)-1):
-            index = 0
-            if i > 0:
-                for x in range(0, i):
-                    index += len(goods_class_list[x])
-            class_total[i] = 0
-            class_com[i] = 0
-            class_trader[i] = 0
-            for k in range(0, len(goods_class_list[i])):
-                class_total[i] += goodstotal[index+k]
-                class_com[i] += goodscom[index+k]
-                class_trader[i] += goodstrader[index+k]
-            class_comratio[i] = getratio(class_com[i], class_total[i])
-            class_traderratio[i] = getratio(class_trader[i], class_total[i])
-            classrow0[i] = [goods_class_name[i], class_total[i], class_com[i], class_comratio[i], class_trader[i], class_traderratio[i]]
-            # 最后一个大类（非主流资源）的数据为总量-前面所有分类的量
-            class_total[end] -= class_total[i]
-            class_com[end] -= class_com[i]
-            class_trader[end] -= class_trader[i]
-        class_comratio[end] = getratio(class_com[end], class_total[end])
-        class_traderratio[end] = getratio(class_trader[end], class_total[end])
-        classrow0[end] = [goods_class_name[end], class_total[end], class_com[end], class_comratio[end], class_trader[end], class_traderratio[end]]
-        classrow[dateitem] = classrow0
-        ### 计算主流资源（分类列表中的前两个） ###
-        mainamount = 2
-        maintotal = 0
-        maincom = 0
-        maintrader = 0
-        for i in range(0, mainamount):
-            maintotal += class_total[i]
-            maincom += class_com[i]
-            maintrader += class_trader[i]
-        maincomratio = getratio(maincom, maintotal)
-        maintraderratio = getratio(maintrader, maintotal)
-        #print maintotal, maincom, maincomratio, maintrader, maintraderratio
-        mainrow[dateitem] = [u"主流资源", maintotal, maincom, maincomratio, maintrader, maintraderratio]
-    return (totalrow, mainrow, classrow, goodsrow)
-
-def write_sum_summary(resultfile, item, goods_class_list, totalrow, mainrow, classrow, goodsrow):
-    subsheet = resultfile.add_sheet("Summary")
-    titlerow = [u"矿种", u"合计", u"钢厂", u"钢厂占比", u"贸易商", u"贸易商占比"]
-    for i in range(0, len(titlerow)):
-        subsheet.write(0, i, titlerow[i], xlwt.easyxf("font: bold on; alignment: vert center, horz center;"))
-        subsheet.write(1, i, totalrow[i], summary_style('total', i))
-        subsheet.write(2, i, mainrow[i], summary_style('title2', i))
-    for k in range(0, len(classrow)):
-        index = 3   # 仅比mainrow大1，表示紧挨着下一行写数据；若有空1行，则index=4
-        index2 = 0
-        if k > 0:
-            for x in range(0, k):
-                index += (len(goods_class_list[x])+2)
-                index2 += len(goods_class_list[x])
-        for m in range(0, len(titlerow)):
-            if k != len(classrow)-1:
-                subsheet.write(index, m, classrow[k][m], summary_style('title1', m))
-            else:
-                subsheet.write(index, m, classrow[k][m], summary_style('title2', m))
-        for n in range(0, len(goods_class_list[k])):
-            for y in range(0, len(titlerow)):
-                subsheet.write(index+n+1, y, goodsrow[index2+n][y], summary_style('goods', y))
-    print u'\033[1;34;0m%s\033[0m各港口汇总统计数据已写入Summary子表.' % item
-    return resultfile
-
-def write_sum_detail(resultfile, item, dates, port, owner, goods, amount):
-    style_title = xlwt.easyxf("font: bold on, color-index blue; alignment: vert center, horz center; pattern: pattern solid, fore_colour light_yellow;")
-    style_center = xlwt.easyxf("alignment: vert center, horz center;")
-    style_name = xlwt.easyxf("alignment: vert center, horz left;")
-    style_amount = xlwt.easyxf("alignment: vert center, horz right;", num_format_str='#,##0')
-
-    subsheet = resultfile.add_sheet("Detail")
-    titlerow = [u"序号", u"港口", u"货主", u"货名", u"数量"]
-    ### 写标题行 ###
-    for i in range(0, len(titlerow)):
-        subsheet.write(0, i, titlerow[i], style_title)
-    ### 写每行数据 ###
-    count = 0
-    dateindex = dates.keys().index(item)
-    if dateindex > 0:
-        for i in range(0, dateindex):
-            count += dates[dates.keys()[i]]
-    for i in range(0, dates[item]):
-        subsheet.write(i + 1, 0, i + 1, style_center)
-        subsheet.write(i + 1, 1, port[count], style_center)
-        subsheet.write(i + 1, 2, owner[count], style_name)
-        subsheet.write(i + 1, 3, goods[count], style_name)
-        subsheet.write(i + 1, 4, amount[count], style_amount)
-        count += 1
-    print u'\033[1;34;0m%s\033[0m各港口汇总共计\033[1;34;0m%s\033[0m条数据已写入Detail子表.' % (item, dates[item])
-    return resultfile
-
 def calculate_trackdata(powder, block, goodsrow, owner, goods, amount, company):
     goodslist = powder + block
     goodsname = {}
@@ -596,3 +445,231 @@ def write_tracking(tracklist, stddate, olddate, trackfile, subsheet, rowindex, g
             subsheet.write(titleindex, index+i+2+(6*k)+5, u"贸易商占比", style_title)
 
     return (trackfile, writeindex)
+
+def calculate_sum_summary(dates, owner0, goods0, amount0, company, goods_class_list, goods_class_name):
+    totalrow = {}
+    mainrow = {}
+    classrow = {}
+    goodsrow = {}
+    ### 根据不同日期分组保存数据 ###
+    for index in range(0, len(dates.keys())):
+        owner = {}
+        goods = {}
+        amount = {}
+        lowindex = 0
+        dateitem = dates.keys()[index]
+        if index > 0:
+            for i in range(0, index):
+                lowindex += dates[dates.keys()[i]]
+        #print lowindex, lowindex+dates[dateitem]
+        for i in range(lowindex, lowindex+dates[dateitem]):
+            owner[i-lowindex] = owner0[i]
+            goods[i-lowindex] = goods0[i]
+            amount[i-lowindex] = amount0[i]
+        ### 计算所有货物总和 ###
+        totalamount = sum_owner_goods(owner, goods, amount, u"ALL", u"ALL")
+        totalcom = 0
+        totaltrader = 0
+        for item in set(owner.values()):
+            if item in company:
+                totalcom += sum_owner_goods(owner, goods, amount, item, u"ALL")
+            else:
+                totaltrader += sum_owner_goods(owner, goods, amount, item, u"ALL")
+        totalcomratio = getratio(totalcom, totalamount)
+        totaltraderratio = getratio(totaltrader, totalamount)
+        #print totalamount, totalcom, totalcomratio, totaltrader, totaltraderratio
+        totalrow[dateitem] = [u"港存总计", totalamount, totalcom, totalcomratio, totaltrader, totaltraderratio]
+        ### 计算每种货物总和 ###
+        goodstotal = {}
+        goodscom = {}
+        goodscomratio = {}
+        goodstrader = {}
+        goodstraderratio = {}
+        goodsrow0 = {}
+        biglist = []
+        for i in range(0, len(goods_class_name)):
+            for k in range(0, len(goods_class_list[i])):
+                biglist.append(goods_class_list[i][k])
+        for i in range(0, len(biglist)):
+            out = getgoodsamount(biglist[i], owner, goods, amount, company)
+            goodstotal[i], goodscom[i], goodscomratio[i], goodstrader[i], goodstraderratio[i] = out
+            #print goodstotal[i], goodscom[i], goodscomratio[i], goodstrader[i], goodstraderratio[i]
+            goodsrow0[i] = [biglist[i], goodstotal[i], goodscom[i], goodscomratio[i], goodstrader[i], goodstraderratio[i]]
+        goodsrow[dateitem] = goodsrow0
+        ### 分别统计不同大类情况 ###
+        class_total = {}
+        class_com = {}
+        class_trader = {}
+        class_comratio = {}
+        class_traderratio = {}
+        classrow0 = {}
+        end = len(goods_class_name) -1
+        class_total[end] = totalamount
+        class_com[end] = totalcom
+        class_trader[end] = totaltrader
+        for i in range(0, len(goods_class_name)-1):
+            index = 0
+            if i > 0:
+                for x in range(0, i):
+                    index += len(goods_class_list[x])
+            class_total[i] = 0
+            class_com[i] = 0
+            class_trader[i] = 0
+            for k in range(0, len(goods_class_list[i])):
+                class_total[i] += goodstotal[index+k]
+                class_com[i] += goodscom[index+k]
+                class_trader[i] += goodstrader[index+k]
+            class_comratio[i] = getratio(class_com[i], class_total[i])
+            class_traderratio[i] = getratio(class_trader[i], class_total[i])
+            classrow0[i] = [goods_class_name[i], class_total[i], class_com[i], class_comratio[i], class_trader[i], class_traderratio[i]]
+            # 最后一个大类（非主流资源）的数据为总量-前面所有分类的量
+            class_total[end] -= class_total[i]
+            class_com[end] -= class_com[i]
+            class_trader[end] -= class_trader[i]
+        class_comratio[end] = getratio(class_com[end], class_total[end])
+        class_traderratio[end] = getratio(class_trader[end], class_total[end])
+        classrow0[end] = [goods_class_name[end], class_total[end], class_com[end], class_comratio[end], class_trader[end], class_traderratio[end]]
+        classrow[dateitem] = classrow0
+        ### 计算主流资源（分类列表中的前两个） ###
+        mainamount = 2
+        maintotal = 0
+        maincom = 0
+        maintrader = 0
+        for i in range(0, mainamount):
+            maintotal += class_total[i]
+            maincom += class_com[i]
+            maintrader += class_trader[i]
+        maincomratio = getratio(maincom, maintotal)
+        maintraderratio = getratio(maintrader, maintotal)
+        #print maintotal, maincom, maincomratio, maintrader, maintraderratio
+        mainrow[dateitem] = [u"主流资源", maintotal, maincom, maincomratio, maintrader, maintraderratio]
+    return (totalrow, mainrow, classrow, goodsrow)
+
+def write_sum_summary(resultfile, dateitem, goods_class_list, totalrow, mainrow, classrow, goodsrow):
+    subsheet = resultfile.add_sheet("Summary")
+    titlerow = [u"矿种", u"合计", u"钢厂", u"钢厂占比", u"贸易商", u"贸易商占比"]
+    for i in range(0, len(titlerow)):
+        subsheet.write(0, i, titlerow[i], xlwt.easyxf("font: bold on; alignment: vert center, horz center;"))
+        subsheet.write(1, i, totalrow[i], summary_style('total', i))
+        subsheet.write(2, i, mainrow[i], summary_style('title2', i))
+    for k in range(0, len(classrow)):
+        index = 3   # 仅比mainrow大1，表示紧挨着下一行写数据；若有空1行，则index=4
+        index2 = 0
+        if k > 0:
+            for x in range(0, k):
+                index += (len(goods_class_list[x])+2)
+                index2 += len(goods_class_list[x])
+        for m in range(0, len(titlerow)):
+            if k != len(classrow)-1:
+                subsheet.write(index, m, classrow[k][m], summary_style('title1', m))
+            else:
+                subsheet.write(index, m, classrow[k][m], summary_style('title2', m))
+        for n in range(0, len(goods_class_list[k])):
+            for y in range(0, len(titlerow)):
+                subsheet.write(index+n+1, y, goodsrow[index2+n][y], summary_style('goods', y))
+    print u'\033[1;34;0m%s\033[0m各港口汇总统计数据已写入Summary子表.' % dateitem
+    return resultfile
+
+def write_sum_detail(resultfile, item, dates, port, owner, goods, amount):
+    style_title = xlwt.easyxf("font: bold on, color-index blue; alignment: vert center, horz center; pattern: pattern solid, fore_colour light_yellow;")
+    style_center = xlwt.easyxf("alignment: vert center, horz center;")
+    style_name = xlwt.easyxf("alignment: vert center, horz left;")
+    style_amount = xlwt.easyxf("alignment: vert center, horz right;", num_format_str='#,##0')
+
+    subsheet = resultfile.add_sheet("Detail")
+    titlerow = [u"序号", u"港口", u"货主", u"货名", u"数量"]
+    ### 写标题行 ###
+    for i in range(0, len(titlerow)):
+        subsheet.write(0, i, titlerow[i], style_title)
+    ### 写每行数据 ###
+    count = 0
+    dateindex = dates.keys().index(item)
+    if dateindex > 0:
+        for i in range(0, dateindex):
+            count += dates[dates.keys()[i]]
+    for i in range(0, dates[item]):
+        subsheet.write(i + 1, 0, i + 1, style_center)
+        subsheet.write(i + 1, 1, port[count], style_center)
+        subsheet.write(i + 1, 2, owner[count], style_name)
+        subsheet.write(i + 1, 3, goods[count], style_name)
+        subsheet.write(i + 1, 4, amount[count], style_amount)
+        count += 1
+    print u'\033[1;34;0m%s\033[0m各港口汇总共计\033[1;34;0m%s\033[0m条数据已写入Detail子表.' % (item, dates[item])
+    return resultfile
+
+def write_sum_tracking(dateitem, trackfile, subsheet, rowindex, goods_class_name, goods_class_list, totalrow, mainrow, classrow, goodsrow):
+    """追加输出历史追踪数据"""
+    mainamount = 2
+    style_num = xlwt.easyxf("alignment: vert center, horz right;", num_format_str='#,##0')
+    style_precent = xlwt.easyxf("alignment: vert center, horz center;", num_format_str='0.00%')
+    style_title = xlwt.easyxf("font: bold on; alignment: vert center, horz left;")
+    # 数据部分
+    if rowindex == 0:
+        writeindex = 5
+    else:
+        writeindex = rowindex
+    date = get_date_time()[1]+dateitem
+    subsheet.write(writeindex, 0, date)
+    subsheet.write(writeindex, 1, totalrow[1], style_num)
+    for i in range(1, 6):
+        if i == 1:
+            subsheet.write(writeindex, set_row(i), mainrow[i], style_num)
+            subsheet.write(writeindex, set_row(i)+1, getratio(mainrow[1], totalrow[1]), style_precent)
+        else:
+            subsheet.write(writeindex, set_row(i), mainrow[i], track_style(i))
+    for i in range(0, len(classrow)):
+        index = 8
+        index2 = 0
+        if i > 0:
+            for x in range(0, i):
+                index += (len(goods_class_list[x])*6)+1
+                index2 += len(goods_class_list[x])
+        if i < mainamount:
+            subsheet.write(writeindex, index+i, classrow[i][1], style_num)
+            subsheet.write(writeindex, index+i+1, getratio(classrow[i][1], mainrow[1]), style_precent)
+        elif i != len(classrow)-1:
+            subsheet.write(writeindex, index+i, classrow[i][1], style_num)
+            subsheet.write(writeindex, index+i+1, getratio(classrow[i][1], totalrow[1]), style_precent)
+        else:
+            subsheet.write(writeindex, index+i, classrow[i][1], style_num)
+            subsheet.write(writeindex, index+i+1, getratio(classrow[i][1], totalrow[1]), style_precent)
+        for k in range(0, len(goods_class_list[i])):
+            subsheet.write(writeindex, index+i+2+(6*k), goodsrow[index2+k][1], style_num)
+            subsheet.write(writeindex, index+i+2+(6*k)+1, getratio(goodsrow[index2+k][1], classrow[i][1]), style_precent)
+            subsheet.write(writeindex, index+i+2+(6*k)+2, goodsrow[index2+k][2], style_num)
+            subsheet.write(writeindex, index+i+2+(6*k)+3, goodsrow[index2+k][3], style_precent)
+            subsheet.write(writeindex, index+i+2+(6*k)+4, goodsrow[index2+k][4], style_num)
+            subsheet.write(writeindex, index+i+2+(6*k)+5, goodsrow[index2+k][5], style_precent)
+
+        # 标题部分
+    titleindex = 4
+    subsheet.write_merge(0, titleindex, 0, 0, u"日期", style_title)
+    subsheet.write_merge(0, titleindex, 1, 1, u"总库存", style_title)
+    subsheet.write_merge(1, titleindex, 2, 2, mainrow[0], style_title)
+    subsheet.write(titleindex, 3, u"占比", style_title)
+    subsheet.write_merge(3, titleindex, 4, 4, u"钢厂", style_title)
+    subsheet.write(titleindex, 5, u"钢厂占比", style_title)
+    subsheet.write_merge(3, titleindex, 6, 6, u"贸易商", style_title)
+    subsheet.write(titleindex, 7, u"贸易商占比", style_title)
+    for i in range(0, len(classrow)):
+        index = 8  # 前8列标题已指定
+        index2 = 0
+        if i > 0:
+            for x in range(0, i):
+                index += (len(goods_class_list[x])*6)+1
+                index2 += len(goods_class_list[x])
+        if i != len(classrow)-1:
+            subsheet.write_merge(2, titleindex, index+i, index+i, classrow[i][0], style_title)
+            subsheet.write(titleindex, index+i+1, u"占比", style_title)
+        else:
+            subsheet.write_merge(1, titleindex, index+i, index+i, classrow[i][0], style_title)
+            subsheet.write(titleindex, index+i+1, u"占比", style_title)
+        for k in range(0, len(goods_class_list[i])):
+            subsheet.write_merge(3, titleindex, index+i+2+(6*k), index+i+2+(6*k), goodsrow[index2+k][0], style_title)
+            subsheet.write(titleindex, index+i+2+(6*k)+1, goodsrow[index2+k][0]+u"占比", style_title)
+            subsheet.write(titleindex, index+i+2+(6*k)+2, u"钢厂", style_title)
+            subsheet.write(titleindex, index+i+2+(6*k)+3, u"钢厂占比", style_title)
+            subsheet.write(titleindex, index+i+2+(6*k)+4, u"贸易商", style_title)
+            subsheet.write(titleindex, index+i+2+(6*k)+5, u"贸易商占比", style_title)
+    print u'\033[1;34;0m%s\033[0m各港口汇总历史追踪数据已写入第\033[1;34;0m%d\033[0m行.' % (dateitem, writeindex + 1)
+    return trackfile
