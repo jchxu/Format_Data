@@ -97,15 +97,16 @@ def read_list(listname):
     class_list = listfile.sheets()[0].col_values(0)
     kinds = listfile.sheets()[1].col_values(0)
     company = listfile.sheets()[2].col_values(0)
+    trader = listfile.sheets()[3].col_values(0)
     goods_class_name = {}
     goods_class_list = {}
-    for i in range(2, len(class_list)):
-        goods_class_name[i-2] = class_list[i]
-        goods_class_list[i-2] = listfile.sheets()[i+1].col_values(0)
+    for i in range(3, len(class_list)):
+        goods_class_name[i-3] = class_list[i]
+        goods_class_list[i-3] = listfile.sheets()[i+1].col_values(0)
     #for item in class_list:
     #    print u'读取"%s"文件中的"%s"清单.' % (listname.decode('utf-8'), item)
     print u'已读取"%s"文件中的\033[1;34;0m%d\033[0m个清单.' % (listname.decode('utf-8'), len(class_list))
-    return (kinds, company, goods_class_list, goods_class_name)
+    return (kinds, company, trader, goods_class_list, goods_class_name)
 
 def read_data(sheets, sheetindex, kinds):
     """读取子表中的数据行。利用指定的特殊名词判断标题行、货物列、货主列、数量列位置

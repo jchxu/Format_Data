@@ -18,7 +18,7 @@ resultname, trackname, stddate = get_filename(filename)
 #resultname = "铁矿港存结构分析-岚桥-0804.xls"   # 用于自定义输出文件的文件名，或get_filename函数出错时使用
 
 ### 打开文件，读取数据 ###
-kinds, company, goods_class_list, goods_class_name = read_list(listname)
+kinds, company, trader, goods_class_list, goods_class_name = read_list(listname)
 #mainpowder, mainblock, nonmain, kinds, company, trader, powder, block = read_list(listname)
 datafile = xlrd.open_workbook(filename.decode('utf-8'))
 sheets = datafile.sheets()
