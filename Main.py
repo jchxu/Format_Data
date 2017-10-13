@@ -44,7 +44,6 @@ resultfile.save(resultname.decode('utf-8'))
 
 ### 输出历史追踪数据 ###
 trackfile, subsheet, rowindex, olddate = get_tracking_file(trackname)
-#goodsdata = calculate_trackdata(powder, block, goodsrow, owner, goods, amount, company)
 trackfile, writeindex = write_tracking(tracklist, stddate, olddate, trackfile, subsheet, rowindex, goods_class_name, goods_class_list, totalrow, mainrow, classrow, goodsrow)
 trackfile.save(trackname.decode('utf-8'))
 print u'历史追踪数据已写入"\033[1;34;0m%s\033[0m"文件，第\033[1;34;0m%d\033[0m行.' % (trackname.decode('utf-8'), writeindex+1)

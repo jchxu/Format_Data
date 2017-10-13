@@ -210,7 +210,7 @@ def classbydate(files):
         date_files[item] = lists
     return date_files
 
-def get_sum_data(whichdate, filedict):
+def get_all_data(whichdate, filedict):
     dates = {}
     port = {}
     owner = {}
