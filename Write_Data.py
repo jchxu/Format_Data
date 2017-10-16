@@ -673,3 +673,36 @@ def write_sum_tracking(dateitem, trackfile, subsheet, rowindex, goods_class_name
             subsheet.write(titleindex, index+i+2+(6*k)+5, u"贸易商占比", style_title)
     print u'\033[1;34;0m%s\033[0m各港口汇总历史追踪数据已写入第\033[1;34;0m%d\033[0m行.' % (dateitem, writeindex + 1)
     return trackfile
+
+def sum_by_traderandgoods(company, trader, onlyowner, onlygoods, owner, goods, amount):
+    traderorder = {}  #贸易商或品种名称为key，加和后的数值为value
+    goodsorder = {}
+    for item in onlyowner:
+        if item in trader:
+            traderorder[item] = 0
+    for item in onlygoods:
+        goodsorder[item] = 0
+    for i in range(0, len(amount)):
+        if owner[i] in trader:
+            traderorder[owner[i]] += amount[i]
+        elif owner[i] not in company:
+            print u'请检查货主名，未找到"\033[1;31;0m%s\033[0m".' % owner[i]
+    for i in range(0, len(amount)):
+        goodsorder[goods[i]] += amount[i]
+    traderorder = sorted(traderorder.iteritems(), key=lambda d: d[1], reverse=True)
+    goodsorder = sorted(goodsorder.iteritems(), key=lambda d: d[1], reverse=True)
+    return traderorder, goodsorder
+
+def write_by_traderandgoods(ownershipfile, item, dates, port, owner, goods, amount):
+    style_title = xlwt.easyxf("font: bold on, color-index blue; alignment: vert center, horz center; pattern: pattern solid, fore_colour light_yellow;")
+    style_center = xlwt.easyxf("alignment: vert center, horz center;")
+    style_name = xlwt.easyxf("alignment: vert center, horz left;")
+    style_amount = xlwt.easyxf("alignment: vert center, horz right;", num_format_str='#,##0')
+
+    subsheet = ownershipfile.add_sheet("Detail")
+    titlerow = [u"排序", u"贸易商", u"数量", u"   ", u"排序", u"品种", u"数量"]
+    ### 写标题行 ###
+    for i in range(0, len(titlerow)):
+        if i != 3:
+            subsheet.write(1, i, titlerow[i], style_title)
+

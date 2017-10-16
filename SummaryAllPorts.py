@@ -9,6 +9,7 @@ whichdate = ''  # 是否指定汇总某特定日期的数据，例如0804
 ### 文件名前后缀等，一般无需更改 ###
 resultnameprefix = "铁矿港存结构分析汇总-"
 trackname = "铁矿港存结构分析汇总历史追踪.xls"
+ownershipprefix = "货权集中度分析-"
 listname = "分类名录.xlsx"  # 记录主流粉矿、主流块矿、非主流资源、品种、钢厂、贸易商名录的文件
 stdname = "标准名称.xlsx"  # 记录货主（钢厂、贸易商）、品种标准名称的数据文件
 #########################
@@ -33,3 +34,12 @@ for item in dates.keys():
     trackfile.save(trackname.decode('utf-8'))
 
 ### 按照贸易商、品种统计货权集中度并排序 ###
+for item in dates.keys():
+    onlyowner = list(set(owner.values()))
+    onlygoods = list(set(goods.values()))
+    sum_by_traderandgoods(company, trader, onlyowner, onlygoods, owner, goods, amount)
+    #ownershipfile = xlwt.Workbook()
+    #write_by_traderandgoods(ownershipfile, item, dates, port, owner, goods, amount)
+    #ownershipfilename = ownershipprefix+get_date_time()[1]+item+".xls"
+    #ownershipfile.save(ownershipfilename.decode('utf-8'))
+
