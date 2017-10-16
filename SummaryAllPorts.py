@@ -5,11 +5,13 @@ from Write_Data import *
 
 ### 需要用户定义的变量 ###
 whichdate = ''  # 是否指定汇总某特定日期的数据，例如0804
+
+### 文件名前后缀等，一般无需更改 ###
 resultnameprefix = "铁矿港存结构分析汇总-"
 trackname = "铁矿港存结构分析汇总历史追踪.xls"
 listname = "分类名录.xlsx"  # 记录主流粉矿、主流块矿、非主流资源、品种、钢厂、贸易商名录的文件
 stdname = "标准名称.xlsx"  # 记录货主（钢厂、贸易商）、品种标准名称的数据文件
-
+#########################
 
 portfiles = getCustomFiles(u'铁矿港存结构分析-', r'.')
 filedict = classbydate(portfiles)
