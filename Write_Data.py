@@ -693,8 +693,8 @@ def sum_by_traderandgoods(item, dates, company, trader, owner, goods, amount):
     for i in range(index1, index2):
         if (owner[i] in trader) and (owner[i] not in traderorder.keys()):
             traderorder[owner[i]] = 0
-        elif (owner[i] not in company):
-            print u'请检查货主名，未找到"\033[1;31;0m%s\033[0m".' % owner[i]
+        elif (owner[i] not in company) and (owner[i] not in trader):
+            print u'请检查,货主名"\033[1;31;0m%s\033[0m"既不在贸易商分类名单，也不在钢厂分类名单.' % owner[i]
         if (goods[i] not in goodsorder.keys()):
             goodsorder[goods[i]] = 0
     for i in range(index1, index2):
@@ -734,7 +734,43 @@ def write_detail_traderandgoods(ownershipfile, traderorder, goodsorder):
     subsheet.write_merge(0, 0, 4, 6, u"品种集中度排序", style_title2)
     return ownershipfile
 
-def write_summary_traderandgoods(ownershipfile, traderorder, goodsorder):
+def sum_order(index1, index2, orders):
+    res = 0
+    for i in range(index1, index2):
+        res += orders[i][1]
+    return res
+
+def get_sum(orders):
+    result = {}
+    if len(orders) > 10:
+        result["Top 1-3"] = sum_order(0,3,orders)
+        result["Top 4-10"] = sum_order(3, 10, orders)
+        result["Others"] = sum_order(10, len(orders), orders)
+    elif 6 < len(orders) <= 10:
+        result["Top 1-3"] = sum_order(0, 3, orders)
+        result["Top 4-6"] = sum_order(3, 6, orders)
+        result["Others"] = sum_order(6, len(orders), orders)
+    elif 3 < len(orders) <= 6:
+        result["Top 1-2"] = sum_order(0, 2, orders)
+        result["Top 3-4"] = sum_order(2, 4, orders)
+        result["Others"] = sum_order(4, len(orders), orders)
+    elif len(orders) == 3:
+        result["Top 1"] = orders[0][1]
+        result["Top 2"] = orders[1][1]
+        result["Top 3"] = orders[2][1]
+    elif len(orders) == 2:
+        result["Top 1"] = orders[0][1]
+        result["Top 2"] = orders[1][1]
+    elif len(orders) == 1:
+        result["Top 1"] = orders[0][1]
+    return result
+
+def get_ownership_summary(traderorder, goodsorder):
+    tradersum = get_sum(traderorder)
+    goodssum = get_sum(goodsorder)
+    return tradersum, goodssum
+
+def write_summary_traderandgoods(ownershipfile, tradersum, goodssum):
     style_title = xlwt.easyxf(
         "font: bold on, color-index blue; alignment: vert center, horz center; pattern: pattern solid, fore_colour light_yellow;")
     style_title2 = xlwt.easyxf(
@@ -746,44 +782,16 @@ def write_summary_traderandgoods(ownershipfile, traderorder, goodsorder):
     subsheet = ownershipfile.add_sheet("Summary")
     ### 标题行及固定数据 ###
     titlerow = [u"贸易商分类", u"数量", u"   ", u"品种分类", u"数量"]
-    classlist = [u"Top 1-3", u"Top 4-10", u"Other"]
     for i in range(0, len(titlerow)):
         if i != 2:
             subsheet.write(1, i, titlerow[i], style_title)
-    for i in range(0, len(classlist)):
-        subsheet.write(i+2, 0, classlist[i], style_center)
-        subsheet.write(i+2, 3, classlist[i], style_center)
     ### 统计top分类数据 ###
-    index1 = 3
-    index2 = 10
-    if len(traderorder) <= 10:
-
-
-    # top 1-3 #
-    sum1 = 0
-    sum2 = 0
-    for i in range(0,3):
-        sum1 += traderorder[i][1]
-        sum2 += goodsorder[i][1]
-    subsheet.write(2, 1, sum1, style_amount)
-    subsheet.write(2, 4, sum2, style_amount)
-    # top 4-10 #
-    sum1 = 0
-    sum2 = 0
-    for i in range(3, 10):
-        sum1 += traderorder[i][1]
-        sum2 += goodsorder[i][1]
-    subsheet.write(3, 1, sum1, style_amount)
-    subsheet.write(3, 4, sum2, style_amount)
-    # other #
-    sum1 = 0
-    sum2 = 0
-    for i in range(10, len(traderorder)):
-        sum1 += traderorder[i][1]
-    for i in range(10, len(goodsorder)):
-        sum2 += goodsorder[i][1]
-    subsheet.write(4, 1, sum1, style_amount)
-    subsheet.write(4, 4, sum2, style_amount)
+    for i in range(0, len(tradersum)):
+        subsheet.write(i+2, 0, tradersum.keys()[i],style_name)
+        subsheet.write(i+2, 1, tradersum[tradersum.keys()[i]], style_amount)
+    for i in range(0, len(goodssum)):
+        subsheet.write(i+2, 3, goodssum.keys()[i], style_name)
+        subsheet.write(i+2, 4, goodssum[goodssum.keys()[i]], style_amount)
     ### 表头 ###
     subsheet.write_merge(0, 0, 0, 1, u"贸易商集中度", style_title2)
     subsheet.write_merge(0, 0, 3, 4, u"品种集中度", style_title2)

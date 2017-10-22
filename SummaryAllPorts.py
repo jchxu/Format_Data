@@ -37,11 +37,12 @@ for item in dates.keys():
 for item in dates.keys():
     traderorder, goodsorder = sum_by_traderandgoods(item, dates, company, trader, owner, goods, amount)
     ownershipfile = xlwt.Workbook()
-    write_summary_traderandgoods(ownershipfile, traderorder, goodsorder)
-    #write_detail_traderandgoods(ownershipfile, traderorder, goodsorder)
+    tradersum, goodssum = get_ownership_summary(traderorder, goodsorder)
+    write_summary_traderandgoods(ownershipfile, tradersum, goodssum)
+    write_detail_traderandgoods(ownershipfile, traderorder, goodsorder)
     ownershipfilename = ownershipprefix+get_date_time()[1]+item+".xls"
     ownershipfile.save(ownershipfilename.decode('utf-8'))
-#
+
 #    trackfile, subsheet1, rowindex1, olddate1, subsheet2, rowindex2, olddate2 = get_tracking_ownership(trackship, 1)
 #    write_ownership_tracking(trackfile, subsheet1, rowindex1, olddate1, subsheet2, rowindex2, olddate2, item, dates, traderorder, goodsorder)
 #    trackshipname = trackship+"update_to_"+".xls"
