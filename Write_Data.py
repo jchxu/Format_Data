@@ -693,8 +693,9 @@ def sum_by_traderandgoods(company, trader, onlyowner, onlygoods, owner, goods, a
     goodsorder = sorted(goodsorder.iteritems(), key=lambda d: d[1], reverse=True)
     return traderorder, goodsorder
 
-def write_by_traderandgoods(ownershipfile, item, dates, port, owner, goods, amount):
+def write_detail_traderandgoods(ownershipfile, traderorder, goodsorder):
     style_title = xlwt.easyxf("font: bold on, color-index blue; alignment: vert center, horz center; pattern: pattern solid, fore_colour light_yellow;")
+    style_title2 = xlwt.easyxf("font: bold on; alignment: vert center, horz center; pattern: pattern solid, fore_colour light_yellow;")
     style_center = xlwt.easyxf("alignment: vert center, horz center;")
     style_name = xlwt.easyxf("alignment: vert center, horz left;")
     style_amount = xlwt.easyxf("alignment: vert center, horz right;", num_format_str='#,##0')
@@ -705,4 +706,67 @@ def write_by_traderandgoods(ownershipfile, item, dates, port, owner, goods, amou
     for i in range(0, len(titlerow)):
         if i != 3:
             subsheet.write(1, i, titlerow[i], style_title)
+    ### 贸易商排序数据 ###
+    for i in range(0, len(traderorder)):
+        subsheet.write(i+2, 0, i+1, style_center)
+        subsheet.write(i+2, 1, traderorder[i][0], style_name)
+        subsheet.write(i+2, 2, traderorder[i][1], style_amount)
+    ### 品种排序数据 ###
+    for i in range(0, len(goodsorder)):
+        subsheet.write(i+2, 4, i+1, style_center)
+        subsheet.write(i+2, 5, goodsorder[i][0], style_name)
+        subsheet.write(i+2, 6, goodsorder[i][1], style_amount)
+    ### 表头 ####
+    subsheet.write_merge(0, 0, 0, 2, u"贸易商集中度排序", style_title2)
+    subsheet.write_merge(0, 0, 4, 6, u"品种集中度排序", style_title2)
+    return ownershipfile
 
+def write_summary_traderandgoods(ownershipfile, traderorder, goodsorder):
+    style_title = xlwt.easyxf(
+        "font: bold on, color-index blue; alignment: vert center, horz center; pattern: pattern solid, fore_colour light_yellow;")
+    style_title2 = xlwt.easyxf(
+        "font: bold on; alignment: vert center, horz center; pattern: pattern solid, fore_colour light_yellow;")
+    style_center = xlwt.easyxf("alignment: vert center, horz center;")
+    style_name = xlwt.easyxf("alignment: vert center, horz left;")
+    style_amount = xlwt.easyxf("alignment: vert center, horz right;", num_format_str='#,##0')
+
+    subsheet = ownershipfile.add_sheet("Summary")
+    ### 标题行及固定数据 ###
+    titlerow = [u"贸易商分类", u"数量", u"   ", u"品种分类", u"数量"]
+    classlist = [u"Top 1-3", u"Top 4-10", u"Other"]
+    for i in range(0, len(titlerow)):
+        if i != 2:
+            subsheet.write(1, i, titlerow[i], style_title)
+    for i in range(0, len(classlist)):
+        subsheet.write(i+2, 0, classlist[i], style_center)
+        subsheet.write(i+2, 3, classlist[i], style_center)
+    ### 统计top分类数据 ###
+    # top 1-3 #
+    sum1 = 0
+    sum2 = 0
+    for i in range(0,3):
+        sum1 += traderorder[i][1]
+        sum2 += goodsorder[i][1]
+    subsheet.write(2, 1, sum1, style_amount)
+    subsheet.write(2, 4, sum2, style_amount)
+    # top 4-10 #
+    sum1 = 0
+    sum2 = 0
+    for i in range(3, 10):
+        sum1 += traderorder[i][1]
+        sum2 += goodsorder[i][1]
+    subsheet.write(3, 1, sum1, style_amount)
+    subsheet.write(3, 4, sum2, style_amount)
+    # other #
+    sum1 = 0
+    sum2 = 0
+    for i in range(10, len(traderorder)):
+        sum1 += traderorder[i][1]
+    for i in range(10, len(goodsorder)):
+        sum2 += goodsorder[i][1]
+    subsheet.write(4, 1, sum1, style_amount)
+    subsheet.write(4, 4, sum2, style_amount)
+    ### 表头 ###
+    subsheet.write_merge(0, 0, 0, 1, u"贸易商集中度", style_title2)
+    subsheet.write_merge(0, 0, 3, 4, u"品种集中度", style_title2)
+    return ownershipfile

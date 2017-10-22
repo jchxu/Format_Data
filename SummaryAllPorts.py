@@ -33,13 +33,13 @@ for item in dates.keys():
     write_sum_tracking(item, trackfile, subsheet, rowindex, goods_class_name, goods_class_list, totalrow[item], mainrow[item], classrow[item], goodsrow[item])
     trackfile.save(trackname.decode('utf-8'))
 
-### 按照贸易商、品种统计货权集中度并排序 ###
+### 按照贸易商、品种统计货权集中度排序,按日期保存 ###
 for item in dates.keys():
     onlyowner = list(set(owner.values()))
     onlygoods = list(set(goods.values()))
-    sum_by_traderandgoods(company, trader, onlyowner, onlygoods, owner, goods, amount)
-    #ownershipfile = xlwt.Workbook()
-    #write_by_traderandgoods(ownershipfile, item, dates, port, owner, goods, amount)
-    #ownershipfilename = ownershipprefix+get_date_time()[1]+item+".xls"
-    #ownershipfile.save(ownershipfilename.decode('utf-8'))
-
+    traderorder, goodsorder = sum_by_traderandgoods(company, trader, onlyowner, onlygoods, owner, goods, amount)
+    ownershipfile = xlwt.Workbook()
+    write_summary_traderandgoods(ownershipfile, traderorder, goodsorder)
+    write_detail_traderandgoods(ownershipfile, traderorder, goodsorder)
+    ownershipfilename = ownershipprefix+get_date_time()[1]+item+".xls"
+    ownershipfile.save(ownershipfilename.decode('utf-8'))
