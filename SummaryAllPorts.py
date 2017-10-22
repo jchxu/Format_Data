@@ -10,6 +10,7 @@ whichdate = ''  # 是否指定汇总某特定日期的数据，例如0804
 resultnameprefix = "铁矿港存结构分析汇总-"
 trackname = "铁矿港存结构分析汇总历史追踪.xls"
 ownershipprefix = "货权集中度分析-"
+trackship = "货权集中度历史追踪-"
 listname = "分类名录.xlsx"  # 记录主流粉矿、主流块矿、非主流资源、品种、钢厂、贸易商名录的文件
 stdname = "标准名称.xlsx"  # 记录货主（钢厂、贸易商）、品种标准名称的数据文件
 #########################
@@ -28,18 +29,20 @@ for item in dates.keys():
     write_sum_detail(resultfile, item, dates, port, owner, goods, amount)
     resultname = resultnameprefix+get_date_time()[1]+item+".xls"
     resultfile.save(resultname.decode('utf-8'))
-
-    trackfile, subsheet, rowindex, olddate = get_tracking_file(trackname)
-    write_sum_tracking(item, trackfile, subsheet, rowindex, goods_class_name, goods_class_list, totalrow[item], mainrow[item], classrow[item], goodsrow[item])
+    trackfile, subsheet, rowindex, olddate = get_tracking_file(trackname, 5)
+    write_sum_tracking(item, trackfile, subsheet, rowindex, olddate, goods_class_name, goods_class_list, totalrow[item], mainrow[item], classrow[item], goodsrow[item])
     trackfile.save(trackname.decode('utf-8'))
 
 ### 按照贸易商、品种统计货权集中度排序,按日期保存 ###
 for item in dates.keys():
-    onlyowner = list(set(owner.values()))
-    onlygoods = list(set(goods.values()))
-    traderorder, goodsorder = sum_by_traderandgoods(company, trader, onlyowner, onlygoods, owner, goods, amount)
+    traderorder, goodsorder = sum_by_traderandgoods(item, dates, company, trader, owner, goods, amount)
     ownershipfile = xlwt.Workbook()
     write_summary_traderandgoods(ownershipfile, traderorder, goodsorder)
-    write_detail_traderandgoods(ownershipfile, traderorder, goodsorder)
+    #write_detail_traderandgoods(ownershipfile, traderorder, goodsorder)
     ownershipfilename = ownershipprefix+get_date_time()[1]+item+".xls"
     ownershipfile.save(ownershipfilename.decode('utf-8'))
+#
+#    trackfile, subsheet1, rowindex1, olddate1, subsheet2, rowindex2, olddate2 = get_tracking_ownership(trackship, 1)
+#    write_ownership_tracking(trackfile, subsheet1, rowindex1, olddate1, subsheet2, rowindex2, olddate2, item, dates, traderorder, goodsorder)
+#    trackshipname = trackship+"update_to_"+".xls"
+#    trackfile.save(trackshipname.decode('utf-8'))

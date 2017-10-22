@@ -376,11 +376,11 @@ def write_tracking(tracklist, stddate, olddate, trackfile, subsheet, rowindex, g
     year = get_date_time()[1]
     month = stddate[0:2]
     day = stddate[2:4]
-    date = "%4s/%2s/%2s" % (year, month, day)
-    #print olddate
-    #for i in olddate.keys():
-    #    if date == olddate[i]:
-    #        writeindex = i
+    date = "%4s%2s%2s" % (year, month, day)
+    for i in olddate.keys():
+        #print olddate[i], date
+        if date == olddate[i]:
+            writeindex = i
     subsheet.write(writeindex, 0, date)
     subsheet.write(writeindex, 1, totalrow[1], style_num)
     for i in range(1, 6):
@@ -597,7 +597,7 @@ def write_sum_detail(resultfile, item, dates, port, owner, goods, amount):
     print u'\033[1;34;0m%s\033[0m各港口汇总共计\033[1;34;0m%s\033[0m条数据已写入Detail子表.' % (item, dates[item])
     return resultfile
 
-def write_sum_tracking(dateitem, trackfile, subsheet, rowindex, goods_class_name, goods_class_list, totalrow, mainrow, classrow, goodsrow):
+def write_sum_tracking(dateitem, trackfile, subsheet, rowindex, olddate, goods_class_name, goods_class_list, totalrow, mainrow, classrow, goodsrow):
     """追加输出历史追踪数据"""
     mainamount = 2
     style_num = xlwt.easyxf("alignment: vert center, horz right;", num_format_str='#,##0')
@@ -609,6 +609,10 @@ def write_sum_tracking(dateitem, trackfile, subsheet, rowindex, goods_class_name
     else:
         writeindex = rowindex
     date = get_date_time()[1]+dateitem
+    for i in olddate.keys():
+        #print olddate[i], date
+        if date == olddate[i]:
+            writeindex = i
     subsheet.write(writeindex, 0, date)
     subsheet.write(writeindex, 1, totalrow[1], style_num)
     for i in range(1, 6):
@@ -674,20 +678,29 @@ def write_sum_tracking(dateitem, trackfile, subsheet, rowindex, goods_class_name
     print u'\033[1;34;0m%s\033[0m各港口汇总历史追踪数据已写入第\033[1;34;0m%d\033[0m行.' % (dateitem, writeindex + 1)
     return trackfile
 
-def sum_by_traderandgoods(company, trader, onlyowner, onlygoods, owner, goods, amount):
+def sum_by_traderandgoods(item, dates, company, trader, owner, goods, amount):
     traderorder = {}  #贸易商或品种名称为key，加和后的数值为value
     goodsorder = {}
-    for item in onlyowner:
-        if item in trader:
-            traderorder[item] = 0
-    for item in onlygoods:
-        goodsorder[item] = 0
-    for i in range(0, len(amount)):
-        if owner[i] in trader:
-            traderorder[owner[i]] += amount[i]
-        elif owner[i] not in company:
+    onlyowner = list(set(owner.values()))
+    onlygoods = list(set(goods.values()))
+    index1 = 0
+    index2 = len(amount)
+    dateindex = dates.keys().index(item)
+    if dateindex > 0:
+        for i in range(0, dateindex):
+            index1 += dates[dates.keys()[i]]
+    index2 = index1 + dates[item]
+    for i in range(index1, index2):
+        if (owner[i] in trader) and (owner[i] not in traderorder.keys()):
+            traderorder[owner[i]] = 0
+        elif (owner[i] not in company):
             print u'请检查货主名，未找到"\033[1;31;0m%s\033[0m".' % owner[i]
-    for i in range(0, len(amount)):
+        if (goods[i] not in goodsorder.keys()):
+            goodsorder[goods[i]] = 0
+    for i in range(index1, index2):
+        if (owner[i] in trader):
+            traderorder[owner[i]] += amount[i]
+    for i in range(index1, index2):
         goodsorder[goods[i]] += amount[i]
     traderorder = sorted(traderorder.iteritems(), key=lambda d: d[1], reverse=True)
     goodsorder = sorted(goodsorder.iteritems(), key=lambda d: d[1], reverse=True)
@@ -741,6 +754,11 @@ def write_summary_traderandgoods(ownershipfile, traderorder, goodsorder):
         subsheet.write(i+2, 0, classlist[i], style_center)
         subsheet.write(i+2, 3, classlist[i], style_center)
     ### 统计top分类数据 ###
+    index1 = 3
+    index2 = 10
+    if len(traderorder) <= 10:
+
+
     # top 1-3 #
     sum1 = 0
     sum2 = 0
@@ -770,3 +788,19 @@ def write_summary_traderandgoods(ownershipfile, traderorder, goodsorder):
     subsheet.write_merge(0, 0, 0, 1, u"贸易商集中度", style_title2)
     subsheet.write_merge(0, 0, 3, 4, u"品种集中度", style_title2)
     return ownershipfile
+
+def write_ownership_tracking(trackfile, subsheet, rowindex, olddate, item, dates, traderorder, goodsorder):
+    style_title = xlwt.easyxf(
+        "font: bold on, color-index blue; alignment: vert center, horz center;")
+    style_center = xlwt.easyxf("alignment: vert center, horz center;")
+    style_name = xlwt.easyxf("alignment: vert center, horz left;")
+    style_amount = xlwt.easyxf("alignment: vert center, horz right;", num_format_str='#,##0')
+
+    titlerow = [u"日期", "Top 1-3", "Top 4-10", "Others"]
+
+    for i in range(0, len(titlerow)):
+        subsheet.write(0, i, titlerow[i], style_title)
+
+
+
+    return trackfile

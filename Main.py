@@ -5,7 +5,7 @@ from Write_Data import *
 
 ### 需要用户定义的变量 ###
 filename = "连云港贸易矿8.4.xls"   # Excel数据文件的文件名，带扩展名。
-sheetindex = [1]  # 需要读取的子表序号(第几个)，有多个时以英文逗号,间隔。
+sheetindex = [1,2]  # 需要读取的子表序号(第几个)，有多个时以英文逗号,间隔。
 
 # 相对固定的设置，如有改动，需相应改变设置
 listname = "分类名录.xlsx"  # 记录主流粉矿、主流块矿、非主流资源、品种、钢厂、贸易商名录的文件
@@ -43,7 +43,7 @@ resultfile.save(resultname.decode('utf-8'))
 
 
 ### 输出历史追踪数据 ###
-trackfile, subsheet, rowindex, olddate = get_tracking_file(trackname)
+trackfile, subsheet, rowindex, olddate = get_tracking_file(trackname, 5)
 trackfile, writeindex = write_tracking(tracklist, stddate, olddate, trackfile, subsheet, rowindex, goods_class_name, goods_class_list, totalrow, mainrow, classrow, goodsrow)
 trackfile.save(trackname.decode('utf-8'))
 print u'历史追踪数据已写入"\033[1;34;0m%s\033[0m"文件，第\033[1;34;0m%d\033[0m行.' % (trackname.decode('utf-8'), writeindex+1)

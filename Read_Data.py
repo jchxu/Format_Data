@@ -28,21 +28,43 @@ read_merge_cell
     v1.0: 如果有合并单元格的情况，返回字典结果，key为序号，value为子表index、合并单元格的行index、列index、值
 """
 
-def get_tracking_file(trackname):
+def get_tracking_file(trackname, index):
     if path.exists(trackname.decode('utf-8')):
-        originfile = xlrd.open_workbook(trackname.decode('utf-8'), 'r')
+        originfile = xlrd.open_workbook(trackname.decode('utf-8'), 'r', formatting_info=True)
         trackfile = copy(originfile)
         subsheet = trackfile.get_sheet(0)
         rowindex = originfile.sheets()[0].nrows
         olddate = {}
-        for i in range(5, rowindex):
-            olddate[5] = originfile.sheets()[0].cell_value(i, 0)
+        for i in range(index, rowindex):
+            olddate[i] = originfile.sheets()[0].cell_value(i, 0)
     else:
         trackfile = xlwt.Workbook()
         subsheet = trackfile.add_sheet("Tracking Data")
         rowindex = 0
         olddate = {}
     return (trackfile, subsheet, rowindex, olddate)
+
+def get_tracking_ownership(trackname, index):
+    rowindex1 = 0
+    rowindex2 = 0
+    olddate1 = {}
+    olddate2 = {}
+    if path.exists(trackname.decode('utf-8')):
+        originfile = xlrd.open_workbook(trackname.decode('utf-8'), 'r', formatting_info=True)
+        trackfile = copy(originfile)
+        subsheet1 = trackfile.get_sheet(0)
+        rowindex1 = originfile.sheets()[0].nrows
+        subsheet2 = trackfile.get_sheet(1)
+        rowindex2 = originfile.sheets()[1].nrows
+        for i in range(index, rowindex1):
+            olddate1[i] = originfile.sheets()[0].cell_value(i, 0)
+        for i in range(index, rowindex2):
+            olddate2[i] = originfile.sheets()[1].cell_value(i, 0)
+    else:
+        trackfile = xlwt.Workbook()
+        subsheet1 = trackfile.add_sheet("Trader")
+        subsheet2 = trackfile.add_sheet("Goods")
+    return (trackfile, subsheet1, rowindex1, olddate1, subsheet2, rowindex2, olddate2)
 
 def get_date_time():
     now_time = datetime.datetime.now()
