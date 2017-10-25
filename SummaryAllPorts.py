@@ -4,22 +4,20 @@ from Read_Data import *
 from Write_Data import *
 
 ### 需要用户定义的变量 ###
-whichdate = ''  # 是否指定汇总某特定日期的数据，例如0804
+whichdate = '0804'  # 是否指定汇总某特定日期的数据，例如0804
 
 ### 文件名前后缀等，一般无需更改 ###
 resultnameprefix = "铁矿港存结构分析汇总-"
 trackname = "铁矿港存结构分析汇总历史追踪.xls"
 ownershipprefix = "货权集中度分析-"
 trackship = "货权集中度历史追踪-"
-listname = "分类名录.xlsx"  # 记录主流粉矿、主流块矿、非主流资源、品种、钢厂、贸易商名录的文件
+listname = "分类名录-old.xlsx"  # 记录主流粉矿、主流块矿、非主流资源、品种、钢厂、贸易商名录的文件
 stdname = "标准名称.xlsx"  # 记录货主（钢厂、贸易商）、品种标准名称的数据文件
-goodsshipname = "集中度统计品种.xlsx"  # 记录需要分品种统计货权集中度的品种
 #########################
 
 portfiles = getCustomFiles(u'铁矿港存结构分析-', r'.')
 filedict = classbydate(portfiles)
 kinds, company, trader, goods_class_list, goods_class_name = read_list(listname)
-goodsshiplist = read_shiplist(goodsshipname)
 dates, port, owner, goods, amount = get_all_data(whichdate, filedict)
 standardize_name(stdname, owner, goods)
 totalrow, mainrow, classrow, goodsrow = calculate_sum_summary(dates, owner, goods, amount, company, goods_class_list, goods_class_name)
@@ -34,13 +32,12 @@ for item in dates.keys():
     trackfile, subsheet, rowindex, olddate = get_tracking_file(trackname, 5)
     write_sum_tracking(item, trackfile, subsheet, rowindex, olddate, goods_class_name, goods_class_list, totalrow[item], mainrow[item], classrow[item], goodsrow[item])
     trackfile.save(trackname.decode('utf-8'))
-
 ### 按照贸易商、品种统计货权集中度排序,按日期保存 ###
 for item in dates.keys():
-    traderorder, goodsorder = sum_by_traderandgoods(item, dates, company, trader, owner, goods, amount)
+    traderorder, goodsorder, subclassgoodstotal, subclassgoods1, subclassgoods2, goodssuborder = sum_by_traderandgoods(item, dates, goods_class_list, goods_class_name, company, trader, owner, goods, amount)
     ownershipfile = xlwt.Workbook()
-    tradersum, goodssum = get_ownership_summary(traderorder, goodsorder)
-    write_summary_traderandgoods(ownershipfile, tradersum, goodssum)
-    write_detail_traderandgoods(ownershipfile, traderorder, goodsorder)
+    alltrader, allgoods, allsubclass, allsub1, allsub2, eachgoods = get_ownership_summary(traderorder, goodsorder, subclassgoodstotal, subclassgoods1, subclassgoods2, goodssuborder)
+    write_summary_traderandgoods(ownershipfile, alltrader, allgoods, allsubclass, allsub1, allsub2, eachgoods)
+    write_detail_traderandgoods(ownershipfile, traderorder, goodsorder, subclassgoodstotal, subclassgoods1, subclassgoods2, goodssuborder)
     ownershipfilename = ownershipprefix+get_date_time()[1]+item+".xls"
     ownershipfile.save(ownershipfilename.decode('utf-8'))
