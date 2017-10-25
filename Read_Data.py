@@ -130,6 +130,11 @@ def read_list(listname):
     print u'已读取"%s"文件中的\033[1;34;0m%d\033[0m个清单.' % (listname.decode('utf-8'), len(class_list))
     return (kinds, company, trader, goods_class_list, goods_class_name)
 
+def read_shiplist(goodsshipname):
+    listfile = xlrd.open_workbook(goodsshipname.decode('utf-8'), 'r')
+    goodsshiplist = listfile.sheets()[0].col_values(0)
+    return goodsshiplist
+
 def read_data(sheets, sheetindex, kinds):
     """读取子表中的数据行。利用指定的特殊名词判断标题行、货物列、货主列、数量列位置
     根据指定条件判断是否为有效数据行，然后依次读取货主、货物、数量，最后返回一个字典。"""

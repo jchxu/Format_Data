@@ -13,11 +13,13 @@ ownershipprefix = "货权集中度分析-"
 trackship = "货权集中度历史追踪-"
 listname = "分类名录.xlsx"  # 记录主流粉矿、主流块矿、非主流资源、品种、钢厂、贸易商名录的文件
 stdname = "标准名称.xlsx"  # 记录货主（钢厂、贸易商）、品种标准名称的数据文件
+goodsshipname = "集中度统计品种.xlsx"  # 记录需要分品种统计货权集中度的品种
 #########################
 
 portfiles = getCustomFiles(u'铁矿港存结构分析-', r'.')
 filedict = classbydate(portfiles)
 kinds, company, trader, goods_class_list, goods_class_name = read_list(listname)
+goodsshiplist = read_shiplist(goodsshipname)
 dates, port, owner, goods, amount = get_all_data(whichdate, filedict)
 standardize_name(stdname, owner, goods)
 totalrow, mainrow, classrow, goodsrow = calculate_sum_summary(dates, owner, goods, amount, company, goods_class_list, goods_class_name)
@@ -42,8 +44,3 @@ for item in dates.keys():
     write_detail_traderandgoods(ownershipfile, traderorder, goodsorder)
     ownershipfilename = ownershipprefix+get_date_time()[1]+item+".xls"
     ownershipfile.save(ownershipfilename.decode('utf-8'))
-
-#    trackfile, subsheet1, rowindex1, olddate1, subsheet2, rowindex2, olddate2 = get_tracking_ownership(trackship, 1)
-#    write_ownership_tracking(trackfile, subsheet1, rowindex1, olddate1, subsheet2, rowindex2, olddate2, item, dates, traderorder, goodsorder)
-#    trackshipname = trackship+"update_to_"+".xls"
-#    trackfile.save(trackshipname.decode('utf-8'))
