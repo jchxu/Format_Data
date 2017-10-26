@@ -685,6 +685,8 @@ def sum_by_traderandgoods(item, dates, goods_class_list, goods_class_name, compa
     subclassgoodstotal = {}
     subclassgoods1 = {}
     subclassgoods2 = {}
+    calssball = {}
+    calsspowder = {}
     biglist = goods_class_list[0]+goods_class_list[1]
     for listname in biglist:
         goodssuborder[listname] = {}
@@ -723,14 +725,26 @@ def sum_by_traderandgoods(item, dates, goods_class_list, goods_class_name, compa
                 goodssuborder[goods[i]][owner[i]] += amount[i]
             else:
                 goodssuborder[goods[i]][owner[i]] = amount[i]
+        if u"球团" in goods[i]:
+            if owner[i] in calssball.keys():
+                calssball[owner[i]] += amount[i]
+            else:
+                calssball[owner[i]] = amount[i]
+        if u"精粉" in goods[i]:
+            if owner[i] in calsspowder.keys():
+                calsspowder[owner[i]] += amount[i]
+            else:
+                calsspowder[owner[i]] = amount[i]
     traderorder = sorted(traderorder.iteritems(), key=lambda d: d[1], reverse=True)
     goodsorder = sorted(goodsorder.iteritems(), key=lambda d: d[1], reverse=True)
     subclassgoodstotal = sorted(subclassgoodstotal.iteritems(), key=lambda d: d[1], reverse=True)
     subclassgoods1 = sorted(subclassgoods1.iteritems(), key=lambda d: d[1], reverse=True)
     subclassgoods2 = sorted(subclassgoods2.iteritems(), key=lambda d: d[1], reverse=True)
+    calssball = sorted(calssball.iteritems(), key=lambda d: d[1], reverse=True)
+    calsspowder = sorted(calsspowder.iteritems(), key=lambda d: d[1], reverse=True)
     for each in goodssuborder.keys():
         goodssuborder[each] = sorted(goodssuborder[each].iteritems(), key=lambda d: d[1], reverse=True)
-    return traderorder, goodsorder, subclassgoodstotal, subclassgoods1, subclassgoods2, goodssuborder
+    return traderorder, goodsorder, subclassgoodstotal, subclassgoods1, subclassgoods2, calssball, calsspowder, goodssuborder
 
 def write_detail_traderandgoods(ownershipfile, traderorder, goodsorder, subclassgoodstotal, subclassgoods1, subclassgoods2, goodssuborder):
     style_title = xlwt.easyxf("font: bold on, color-index blue; alignment: vert center, horz center; pattern: pattern solid, fore_colour light_yellow;")
@@ -791,7 +805,7 @@ def get_sum(orders):
         result["Top 1"] = orders[0][1]
     return result
 
-def get_ownership_summary(traderorder, goodsorder, subclassgoodstotal, subclassgoods1, subclassgoods2, goodssuborder):
+def get_ownership_summary(traderorder, goodsorder, subclassgoodstotal, subclassgoods1, subclassgoods2, calssball, calsspowder, goodssuborder):
     alltrader = get_sum(traderorder)
     allgoods = get_sum(goodsorder)
     allsubclass = get_sum(subclassgoodstotal)
