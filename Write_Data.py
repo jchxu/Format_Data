@@ -687,14 +687,16 @@ def sum_by_traderandgoods(item, dates, goods_class_list, goods_class_name, compa
     subclassgoods2 = {}
     classball = {}
     classpowder = {}
+    onlyowner = list(set(owner.values()))
+    onlygoods = list(set(goods.values()))
     biglist = goods_class_list[0]+goods_class_list[1]
     for listname in biglist:
         goodssuborder[listname] = {}
-        subclassgoodstotal[listname] = 0
-        subclassgoods1[listname] = 0
-        subclassgoods2[listname] = 0
-    onlyowner = list(set(owner.values()))
-    onlygoods = list(set(goods.values()))
+
+    for each in onlyowner:
+        subclassgoodstotal[each] = 0
+        subclassgoods1[each] = 0
+        subclassgoods2[each] = 0
     index1 = 0
     index2 = len(amount)
     dateindex = dates.keys().index(item)
@@ -713,14 +715,15 @@ def sum_by_traderandgoods(item, dates, goods_class_list, goods_class_name, compa
         if (owner[i] in trader):
             traderorder[owner[i]] += amount[i]
     tempdict = {}
+
     for i in range(index1, index2):
         goodsorder[goods[i]] += amount[i]
         if goods[i] in biglist:
-            subclassgoodstotal[goods[i]] += amount[i]
+            subclassgoodstotal[owner[i]] += amount[i]
             if goods[i] in goods_class_list[0]:
-                subclassgoods1[goods[i]] += amount[i]
+                subclassgoods1[owner[i]] += amount[i]
             elif goods[i] in goods_class_list[1]:
-                subclassgoods2[goods[i]] += amount[i]
+                subclassgoods2[owner[i]] += amount[i]
             if owner[i] in goodssuborder[goods[i]].keys():
                 goodssuborder[goods[i]][owner[i]] += amount[i]
             else:
