@@ -685,8 +685,8 @@ def sum_by_traderandgoods(item, dates, goods_class_list, goods_class_name, compa
     subclassgoodstotal = {}
     subclassgoods1 = {}
     subclassgoods2 = {}
-    calssball = {}
-    calsspowder = {}
+    classball = {}
+    classpowder = {}
     biglist = goods_class_list[0]+goods_class_list[1]
     for listname in biglist:
         goodssuborder[listname] = {}
@@ -726,52 +726,43 @@ def sum_by_traderandgoods(item, dates, goods_class_list, goods_class_name, compa
             else:
                 goodssuborder[goods[i]][owner[i]] = amount[i]
         if u"球团" in goods[i]:
-            if owner[i] in calssball.keys():
-                calssball[owner[i]] += amount[i]
+            if owner[i] in classball.keys():
+                classball[owner[i]] += amount[i]
             else:
-                calssball[owner[i]] = amount[i]
+                classball[owner[i]] = amount[i]
         if u"精粉" in goods[i]:
-            if owner[i] in calsspowder.keys():
-                calsspowder[owner[i]] += amount[i]
+            if owner[i] in classpowder.keys():
+                classpowder[owner[i]] += amount[i]
             else:
-                calsspowder[owner[i]] = amount[i]
+                classpowder[owner[i]] = amount[i]
     traderorder = sorted(traderorder.iteritems(), key=lambda d: d[1], reverse=True)
     goodsorder = sorted(goodsorder.iteritems(), key=lambda d: d[1], reverse=True)
     subclassgoodstotal = sorted(subclassgoodstotal.iteritems(), key=lambda d: d[1], reverse=True)
     subclassgoods1 = sorted(subclassgoods1.iteritems(), key=lambda d: d[1], reverse=True)
     subclassgoods2 = sorted(subclassgoods2.iteritems(), key=lambda d: d[1], reverse=True)
-    calssball = sorted(calssball.iteritems(), key=lambda d: d[1], reverse=True)
-    calsspowder = sorted(calsspowder.iteritems(), key=lambda d: d[1], reverse=True)
+    classball = sorted(classball.iteritems(), key=lambda d: d[1], reverse=True)
+    classpowder = sorted(classpowder.iteritems(), key=lambda d: d[1], reverse=True)
     for each in goodssuborder.keys():
         goodssuborder[each] = sorted(goodssuborder[each].iteritems(), key=lambda d: d[1], reverse=True)
-    return traderorder, goodsorder, subclassgoodstotal, subclassgoods1, subclassgoods2, calssball, calsspowder, goodssuborder
+    return traderorder, goodsorder, subclassgoodstotal, subclassgoods1, subclassgoods2, classball, classpowder, goodssuborder
 
-def write_detail_traderandgoods(ownershipfile, traderorder, goodsorder, subclassgoodstotal, subclassgoods1, subclassgoods2, goodssuborder):
-    style_title = xlwt.easyxf("font: bold on, color-index blue; alignment: vert center, horz center; pattern: pattern solid, fore_colour light_yellow;")
-    style_title2 = xlwt.easyxf("font: bold on; alignment: vert center, horz center; pattern: pattern solid, fore_colour light_yellow;")
-    style_center = xlwt.easyxf("alignment: vert center, horz center;")
-    style_name = xlwt.easyxf("alignment: vert center, horz left;")
-    style_amount = xlwt.easyxf("alignment: vert center, horz right;", num_format_str='#,##0')
+def write_detail_traderandgoods(ownershipfile, traderorder, goodsorder, subclassgoodstotal, subclassgoods1, subclassgoods2, classball, classpowder, goodssuborder):
+    style_name = {}
+    style_name[0] = xlwt.easyxf("alignment: vert center, horz left; pattern: pattern solid, fore_colour light_yellow;")
+    style_name[1] = xlwt.easyxf("alignment: vert center, horz left; pattern: pattern solid, fore_colour light_green;")
+    style_amount = {}
+    style_amount[0] = xlwt.easyxf("alignment: vert center, horz right; pattern: pattern solid, fore_colour light_yellow;", num_format_str='#,##0')
+    style_amount[1] = xlwt.easyxf("alignment: vert center, horz right; pattern: pattern solid, fore_colour light_green;",
+                                  num_format_str='#,##0')
 
-    subsheet = ownershipfile.add_sheet("Detail")
-    titlerow = [u"排序", u"贸易商", u"数量", u"   ", u"排序", u"品种", u"数量"]
-    ### 写标题行 ###
-    for i in range(0, len(titlerow)):
-        if i != 3:
-            subsheet.write(1, i, titlerow[i], style_title)
-    ### 贸易商排序数据 ###
-    for i in range(0, len(traderorder)):
-        subsheet.write(i+2, 0, i+1, style_center)
-        subsheet.write(i+2, 1, traderorder[i][0], style_name)
-        subsheet.write(i+2, 2, traderorder[i][1], style_amount)
-    ### 品种排序数据 ###
-    for i in range(0, len(goodsorder)):
-        subsheet.write(i+2, 4, i+1, style_center)
-        subsheet.write(i+2, 5, goodsorder[i][0], style_name)
-        subsheet.write(i+2, 6, goodsorder[i][1], style_amount)
-    ### 表头 ####
-    subsheet.write_merge(0, 0, 0, 2, u"贸易商集中度排序", style_title2)
-    subsheet.write_merge(0, 0, 4, 6, u"品种集中度排序", style_title2)
+    subsheet = ownershipfile.get_sheet(0)
+    detaillist = [traderorder, goodsorder, subclassgoodstotal, subclassgoods1, subclassgoods2, classball, classpowder]
+    for each in goodssuborder.keys():
+        detaillist.append(goodssuborder[each])
+    for i in range(0, len(detaillist)):
+        for j in range(0, len(detaillist[i])):
+            subsheet.write(j+5, 2*i, detaillist[i][j][0], style_name[i%2])
+            subsheet.write(j+5, 2*i+1, detaillist[i][j][1], style_amount[i%2])
     return ownershipfile
 
 def sum_order(index1, index2, orders):
@@ -805,42 +796,56 @@ def get_sum(orders):
         result["Top 1"] = orders[0][1]
     return result
 
-def get_ownership_summary(traderorder, goodsorder, subclassgoodstotal, subclassgoods1, subclassgoods2, calssball, calsspowder, goodssuborder):
+def get_ownership_summary(traderorder, goodsorder, subclassgoodstotal, subclassgoods1, subclassgoods2, classball, classpowder, goodssuborder):
     alltrader = get_sum(traderorder)
     allgoods = get_sum(goodsorder)
     allsubclass = get_sum(subclassgoodstotal)
     allsub1 = get_sum(subclassgoods1)
     allsub2 = get_sum(subclassgoods2)
+    ball = get_sum(classball)
+    powder = get_sum(classpowder)
     eachgoods = {}
     for i in range(0,len(goodssuborder.keys())):
         eachgoods[i] = get_sum(goodssuborder[goodssuborder.keys()[i]])
-    return alltrader, allgoods, allsubclass, allsub1, allsub2, eachgoods
+    return alltrader, allgoods, allsubclass, allsub1, allsub2, ball, powder, eachgoods
 
-def write_summary_traderandgoods(ownershipfile, alltrader, allgoods, allsubclass, allsub1, allsub2, eachgoods):
-    style_title = xlwt.easyxf(
+def write_summary_traderandgoods(ownershipfile, alltrader, allgoods, allsubclass, allsub1, allsub2, ball, powder, eachgoods, goods_class_list):
+    style_title = {}
+    style_title[0] = xlwt.easyxf(
         "font: bold on, color-index blue; alignment: vert center, horz center; pattern: pattern solid, fore_colour light_yellow;")
-    style_title2 = xlwt.easyxf(
+    style_title[1] = xlwt.easyxf(
+        "font: bold on, color-index blue; alignment: vert center, horz center; pattern: pattern solid, fore_colour light_green;")
+    style_title2 = {}
+    style_title2[0] = xlwt.easyxf(
         "font: bold on; alignment: vert center, horz center; pattern: pattern solid, fore_colour light_yellow;")
+    style_title2[1] = xlwt.easyxf(
+        "font: bold on; alignment: vert center, horz center; pattern: pattern solid, fore_colour light_green;")
     style_center = xlwt.easyxf("alignment: vert center, horz center;")
-    style_name = xlwt.easyxf("alignment: vert center, horz left;")
-    style_amount = xlwt.easyxf("alignment: vert center, horz right;", num_format_str='#,##0')
+    style_name = {}
+    style_name[0] = xlwt.easyxf("alignment: vert center, horz left; pattern: pattern solid, fore_colour gold;")
+    style_name[1] = xlwt.easyxf("alignment: vert center, horz left; pattern: pattern solid, fore_colour lime;")
+    style_amount = {}
+    style_amount[0] = xlwt.easyxf("alignment: vert center, horz right; pattern: pattern solid, fore_colour gold;", num_format_str='#,##0')
+    style_amount[1] = xlwt.easyxf("alignment: vert center, horz right; pattern: pattern solid, fore_colour lime;",
+                                  num_format_str='#,##0')
 
     subsheet = ownershipfile.add_sheet(u"货权集中度")
     ### 标题行及固定数据 ###
-    titlerow = [u"贸易商分类", u"数量", u"   ", u"品种分类", u"数量"]
-    for i in range(0, len(titlerow)):
-        if i != 2:
-            subsheet.write(1, i, titlerow[i], style_title)
-    ### 统计top分类数据 ###
-    for i in range(0, len(tradersum)):
-        subsheet.write(i+2, 0, tradersum.keys()[i],style_name)
-        subsheet.write(i+2, 1, tradersum[tradersum.keys()[i]], style_amount)
-    for i in range(0, len(goodssum)):
-        subsheet.write(i+2, 3, goodssum.keys()[i], style_name)
-        subsheet.write(i+2, 4, goodssum[goodssum.keys()[i]], style_amount)
-    ### 表头 ###
-    subsheet.write_merge(0, 0, 0, 1, u"贸易商集中度", style_title2)
-    subsheet.write_merge(0, 0, 3, 4, u"品种集中度", style_title2)
+    titlerow = [u"贸易商名称", u"数量"]
+    classlist = [alltrader, allgoods, allsubclass, allsub1, allsub2, ball, powder]
+    for each in eachgoods.keys():
+        classlist.append(eachgoods[each])
+    titlename = [u"贸易商集中度", u"品种集中度", u"主流粉+块集中度", u"主流粉集中度", u"主流块集中度", u"球团矿集中度", u"精粉矿集中度"] + goods_class_list[0] + goods_class_list[1]
+    for i in range(0, len(classlist)):
+        subsheet.write_merge(0, 0, 2*i, 2*i+1, titlename[i], style_title2[i%2])
+        if i == 1:
+            subsheet.write(1, 2*i, u"品种名称", style_title[i%2])
+        else:
+            subsheet.write(1, 2*i, titlerow[0], style_title[i%2])
+        subsheet.write(1, 2*i+1, titlerow[1], style_title[i%2])
+        for j in range(0, len(classlist[i])):
+            subsheet.write(j+2, 2*i, classlist[i].keys()[j], style_name[i%2])
+            subsheet.write(j+2, 2*i+1, classlist[i][classlist[i].keys()[j]], style_amount[i%2])
     return ownershipfile
 
 def write_ownership_tracking(trackfile, subsheet, rowindex, olddate, item, dates, traderorder, goodsorder):

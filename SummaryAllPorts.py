@@ -34,10 +34,10 @@ for item in dates.keys():
     trackfile.save(trackname.decode('utf-8'))
 ### 按照贸易商、品种统计货权集中度排序,按日期保存 ###
 for item in dates.keys():
-    traderorder, goodsorder, subclassgoodstotal, subclassgoods1, subclassgoods2, calssball, calsspowder, goodssuborder = sum_by_traderandgoods(item, dates, goods_class_list, goods_class_name, company, trader, owner, goods, amount)
+    traderorder, goodsorder, subclassgoodstotal, subclassgoods1, subclassgoods2, classball, classpowder, goodssuborder = sum_by_traderandgoods(item, dates, goods_class_list, goods_class_name, company, trader, owner, goods, amount)
     ownershipfile = xlwt.Workbook()
-    alltrader, allgoods, allsubclass, allsub1, allsub2, eachgoods = get_ownership_summary(traderorder, goodsorder, subclassgoodstotal, subclassgoods1, subclassgoods2, calssball, calsspowder, goodssuborder)
-    write_summary_traderandgoods(ownershipfile, alltrader, allgoods, allsubclass, allsub1, allsub2, eachgoods)
-    #write_detail_traderandgoods(ownershipfile, traderorder, goodsorder, subclassgoodstotal, subclassgoods1, subclassgoods2, goodssuborder)
+    alltrader, allgoods, allsubclass, allsub1, allsub2, ball, powder, eachgoods = get_ownership_summary(traderorder, goodsorder, subclassgoodstotal, subclassgoods1, subclassgoods2, classball, classpowder, goodssuborder)
+    write_summary_traderandgoods(ownershipfile, alltrader, allgoods, allsubclass, allsub1, allsub2, ball, powder, eachgoods, goods_class_list)
+    write_detail_traderandgoods(ownershipfile, traderorder, goodsorder, subclassgoodstotal, subclassgoods1, subclassgoods2, classball, classpowder, goodssuborder)
     ownershipfilename = ownershipprefix+get_date_time()[1]+item+".xls"
     ownershipfile.save(ownershipfilename.decode('utf-8'))
