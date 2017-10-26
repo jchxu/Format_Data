@@ -678,6 +678,12 @@ def write_sum_tracking(dateitem, trackfile, subsheet, rowindex, olddate, goods_c
     print u'\033[1;34;0m%s\033[0m各港口汇总历史追踪数据已写入第\033[1;34;0m%d\033[0m行.' % (dateitem, writeindex + 1)
     return trackfile
 
+def del_dict_value(dicts, value):
+    for item in dicts.keys():
+        if dicts[item] == value:
+            del dicts[item]
+    return dicts
+
 def sum_by_traderandgoods(item, dates, goods_class_list, goods_class_name, company, trader, owner, goods, amount):
     traderorder = {}  #贸易商或品种名称为key，加和后的数值为value
     goodsorder = {}
@@ -738,6 +744,17 @@ def sum_by_traderandgoods(item, dates, goods_class_list, goods_class_name, compa
                 classpowder[owner[i]] += amount[i]
             else:
                 classpowder[owner[i]] = amount[i]
+
+    traderorder = del_dict_value(traderorder, 0)
+    goodsorder = del_dict_value(goodsorder, 0)
+    subclassgoodstotal = del_dict_value(subclassgoodstotal, 0)
+    subclassgoods1 = del_dict_value(subclassgoods1, 0)
+    subclassgoods2 = del_dict_value(subclassgoods2, 0)
+    classball = del_dict_value(classball, 0)
+    classpowder = del_dict_value(classpowder, 0)
+    for each in goodssuborder.keys():
+        goodssuborder[each] = del_dict_value(goodssuborder[each], 0)
+
     traderorder = sorted(traderorder.iteritems(), key=lambda d: d[1], reverse=True)
     goodsorder = sorted(goodsorder.iteritems(), key=lambda d: d[1], reverse=True)
     subclassgoodstotal = sorted(subclassgoodstotal.iteritems(), key=lambda d: d[1], reverse=True)
@@ -799,6 +816,20 @@ def get_sum(orders):
         result["Top 1"] = orders[0][1]
     return result
 
+def dictkeysort(keylist):
+    sortedlist = []
+    tempdict = {}
+    for item in keylist:
+        if (item == "Others") or (item == "Top 3"):
+            tempdict[3] = item
+        elif ("Top 1-" in item) or (item == "Top 1"):
+            tempdict[1] = item
+        else:
+            tempdict[2] = item
+    for i in range(1,len(tempdict)+1):
+        sortedlist.append(tempdict[i])
+    return sortedlist
+
 def get_ownership_summary(traderorder, goodsorder, subclassgoodstotal, subclassgoods1, subclassgoods2, classball, classpowder, goodssuborder):
     alltrader = get_sum(traderorder)
     allgoods = get_sum(goodsorder)
@@ -847,8 +878,10 @@ def write_summary_traderandgoods(ownershipfile, alltrader, allgoods, allsubclass
             subsheet.write(1, 2*i, titlerow[0], style_title[i%2])
         subsheet.write(1, 2*i+1, titlerow[1], style_title[i%2])
         for j in range(0, len(classlist[i])):
-            subsheet.write(j+2, 2*i, classlist[i].keys()[j], style_name[i%2])
-            subsheet.write(j+2, 2*i+1, classlist[i][classlist[i].keys()[j]], style_amount[i%2])
+            #keylist = sorted(classlist[i].keys())
+            keylist = dictkeysort(classlist[i].keys())
+            subsheet.write(j+2, 2*i, keylist[j], style_name[i%2])
+            subsheet.write(j+2, 2*i+1, classlist[i][keylist[j]], style_amount[i%2])
     return ownershipfile
 
 def write_ownership_tracking(trackfile, subsheet, rowindex, olddate, item, dates, traderorder, goodsorder):
