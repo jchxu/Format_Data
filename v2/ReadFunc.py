@@ -12,10 +12,10 @@ def ReadSource(SourceFileName):
     Sheet = SourceFile.sheet_by_index(0)
     for i in range(1, Sheet.nrows):
         Line = Sheet.row_values(i)
-        Owner.append(Line[0].strip())
-        Goods.append(Line[1].strip())
+        Owner.append(Line[0].replace(' ',''))
+        Goods.append(Line[1].replace(' ',''))
         Amount.append(Line[2])
-        Port.append(Line[3].strip())
+        Port.append(Line[3].replace(' ',''))
         if len(Line) >= 5:  #有日期，记录日期；无日期，记录为“-”
             ArrivalDate.append(Line[4])
         else:
@@ -34,7 +34,7 @@ def ReadList(ListFileName):
     SteelCompany = ListFile.sheets()[2].col_values(0)   #钢厂列表
     Trader = ListFile.sheets()[3].col_values(0)     #贸易商列表
     for i in range(3, len(ClassList)):
-        GoodsClassName[i-3] = ClassList[i]  #分类种类中的第4项开始为各个小的品种分类
+        GoodsClassName[i-3] = ClassList[i].replace(' ','')  #分类种类中的第4项开始为各个小的品种分类
         GoodsClassList[i-3] = ListFile.sheets()[i+1].col_values(0)
     print(u'已读取"\033[1;34;0m%s\033[0m"中的\033[1;34;0m%d\033[0m个清单.' % (ListFileName, len(ClassList)))
     ListFile.release_resources()
@@ -49,11 +49,11 @@ def ReadStd(StdFileName):
     GoodsSheet = StdFile.sheet_by_index(1)
     for i in range(1, OwnerSheet.nrows):
         RowValue = OwnerSheet.row_values(i)
-        StdOwner[RowValue[0].strip()] = RowValue[1].strip()
+        StdOwner[RowValue[0].replace(' ','')] = RowValue[1].replace(' ','')
     print(u'已读取"\033[1;34;0m%s\033[0m"中的\033[1;34;0m%d\033[0m个货主标准名称.' % (StdFileName, OwnerSheet.nrows-1))
     for i in range(1, GoodsSheet.nrows):
         RowValue = GoodsSheet.row_values(i)
-        StdGoods[RowValue[0].strip()] = RowValue[1].strip()
+        StdGoods[RowValue[0].replace(' ','')] = RowValue[1].replace(' ','')
     print(u'已读取"\033[1;34;0m%s\033[0m"中的\033[1;34;0m%d\033[0m个品种标准名称.' % (StdFileName, GoodsSheet.nrows-1))
     StdFile.release_resources()
     return (StdOwner, StdGoods)
