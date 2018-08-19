@@ -61,22 +61,23 @@ def SumTotal(GoodDataDict, SteelCompany):
     Steel = 0
     for item in GoodDataDict.keys():
         Total += GoodDataDict[item]
-
         if item.split('-')[1] in SteelCompany:
             Steel += GoodDataDict[item]
     return (Total, Steel)
 
-### 统计、汇总 ###
-def CalcSummary(PortList, GoodList, DataClassified, SteelCompany, GoodsClassName, GoodsClassList):
-    GoodsTotal = {}    #{港口:{品种名称:总数量}}
+### 根据港口、分类、品种汇总数量 ###
+def SummaryAmount(PortList, GoodList, DataClassified, SteelCompany, GoodsClassName, GoodsClassList):
+    TotalAmount = {}   #{港口:总数量}
+    TotalSteel = {}    #{港口:港口总数量}
     ClassTotal = {}    #{港口:{分类名称:总数量}}
-    GoodsSteel = {}    #{港口:{品种名称:钢厂总数量}}
     ClassSteel = {}    #{港口:{分类名称:钢厂总数量}}
+    GoodsTotal = {}    #{港口:{品种名称:总数量}}
+    GoodsSteel = {}    #{港口:{品种名称:钢厂总数量}}
     for i in PortList:
-        GoodsTotal[i] = {}
-        GoodsSteel[i] = {}
         ClassTotal[i] = {}
         ClassSteel[i] = {}
+        GoodsTotal[i] = {}
+        GoodsSteel[i] = {}
     #按港口/品种统计
     for i in PortList:
         for j in DataClassified[i].keys():
@@ -87,6 +88,7 @@ def CalcSummary(PortList, GoodList, DataClassified, SteelCompany, GoodsClassName
             else:    #该港口、该品种有一个或多个货主数据
                 GoodsTotal[i][j], GoodsSteel[i][j] = SumTotal(GoodData, SteelCompany)
             #print(i,j,GoodsTotal[i][j],GoodsSteel[i][j])
+        #分类统计汇总
         for j in GoodsClassName.keys():
             ClassTotal[i][GoodsClassName[j]] = 0
             ClassSteel[i][GoodsClassName[j]] = 0
@@ -97,7 +99,54 @@ def CalcSummary(PortList, GoodList, DataClassified, SteelCompany, GoodsClassName
                     ClassTotal[i][GoodsClassName[j]] += GoodsTotal[i][k]
                     ClassSteel[i][GoodsClassName[j]] += GoodsSteel[i][k]
             #print(i,GoodsClassName[j],ClassTotal[i][GoodsClassName[j]],ClassSteel[i][GoodsClassName[j]])
+        TotalAmount[i] = sum(list(GoodsTotal[i].values()))
+        TotalSteel[i] = sum(list(GoodsSteel[i].values()))
     #按分类统计汇总
     #print(GoodsClassName)
     #print(GoodsClassList)
-    return (GoodsTotal, ClassTotal, GoodsSteel, ClassSteel)
+    AmountInfo = [TotalAmount, TotalSteel, ClassTotal, ClassSteel, GoodsTotal, GoodsSteel]
+    return (AmountInfo)
+
+### 根据{品种：{货主:数量}}字典，统计不同货主的品种数量 ###
+def CalcShip(GoodDataDict, SteelCompany):
+    GoodOwner = []
+    GoodShip = {}
+    GoodSteelShip = {}
+    GoodOtherShip = {}
+    for item in GoodDataDict.keys():
+        GoodOwner.append(item.split('-')[1])
+    GoodOwner = list(set(GoodOwner))    #非重复的货主列表
+    for item in GoodOwner:
+        GoodShip[item] = 0
+        if item in SteelCompany:
+            GoodSteelShip[item] = 0
+        else:
+            GoodOtherShip[item] = 0
+    for item in GoodDataDict.keys():
+        Owner = item.split('-')[1]
+        GoodShip[Owner] += GoodDataDict[item]
+        if Owner in SteelCompany:
+            GoodSteelShip[Owner] += GoodDataDict[item]
+        else:
+            GoodOtherShip[Owner] += GoodDataDict[item]
+    return (GoodShip,GoodSteelShip,GoodOtherShip)
+
+### 统计各港口、品种下，货主/钢厂/贸易商的数量 ###
+def SummaryShip(PortList, GoodList, DataClassified, SteelCompany, GoodsClassName, GoodsClassList):
+    GoodShip = {}       #{港口:{品种:{货主：数量}}}
+    GoodSteelShip = {}  #{港口:{品种:{钢厂：数量}}}
+    GoodOtherShip = {}  #{港口:{品种:{贸易商：数量}}}
+    for i in PortList:
+        GoodShip[i] = {}
+        GoodSteelShip[i] = {}
+        GoodOtherShip[i] = {}
+    for i in PortList:
+        for j in DataClassified[i].keys():
+            GoodShip[i][j] = {}
+            GoodSteelShip[i][j] = {}
+            GoodOtherShip[i][j] = {}
+        for j in DataClassified[i].keys():
+            GoodData = DataClassified[i][j]
+            GoodShip[i][j], GoodSteelShip[i][j], GoodOtherShip[i][j] = CalcShip(GoodData, SteelCompany)
+    ShipInfo = [GoodShip, GoodSteelShip, GoodOtherShip]
+    return (ShipInfo)

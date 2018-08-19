@@ -18,8 +18,8 @@ StdOwner, StdGoods = ReadStd(StdFile)   #读取标准名称中的货主和品种
 ### 数据处理 ###
 Owner, Goods, Port = Standardize(Owner, Goods, Port, StdOwner, StdGoods, StdPort)    #货主/品种/港口名称标准化
 PortList, GoodList, DataClassified = ClassifyByPortKind(Owner, Goods, Amount, Port)  #根据港口和品种分类数据
-GoodsTotal, ClassTotal, GoodsSteel, ClassSteel = CalcSummary(PortList, GoodList, DataClassified, SteelCompany, GoodsClassName, GoodsClassList)
-print(GoodsTotal)
-print(ClassTotal)
-print(GoodsSteel)
-print(ClassSteel)
+AmountInfo = SummaryAmount(PortList, GoodList, DataClassified, SteelCompany, GoodsClassName, GoodsClassList)
+ShipInfo = SummaryShip(PortList, GoodList, DataClassified, SteelCompany, GoodsClassName, GoodsClassList)
+
+### 数据输出 ###
+WriteSummary(AmountInfo,ShipInfo, PortList, GoodsClassName, GoodsClassList)
