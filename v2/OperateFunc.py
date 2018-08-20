@@ -133,6 +133,9 @@ def CalcShip(GoodDataDict, SteelCompany):
 
 ### 统计各港口、品种下，货主/钢厂/贸易商的数量 ###
 def SummaryShip(PortList, GoodList, DataClassified, SteelCompany, GoodsClassName, GoodsClassList):
+    ClassShip = {}      #{港口:{分类:{货主：数量}}}
+    ClassSteelShip = {} #{港口:{分类:{钢厂：数量}}}
+    ClassOtherShip = {} #{港口:{分类:{贸易商：数量}}}
     GoodShip = {}       #{港口:{品种:{货主：数量}}}
     GoodSteelShip = {}  #{港口:{品种:{钢厂：数量}}}
     GoodOtherShip = {}  #{港口:{品种:{贸易商：数量}}}
