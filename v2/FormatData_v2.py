@@ -5,7 +5,7 @@ from WriteFunc import *
 
 ### 需要用户定义的参数 ###
 SourceFile = "京唐港8.1库存.xlsx"   #港口数据文件
-#SourceFile = "京唐港01.07库存.xlsx"   #港口数据文件
+SourceFile = "京唐港01.07库存.xlsx"   #港口数据文件
 ListFile = "分类名录.xlsx"  #记录主流粉矿、主流块矿、非主流资源、品种、钢厂、贸易商名录的文件
 StdFile = "标准名称.xlsx"  #记录货主（钢厂、贸易商）、品种标准名称的数据文件
 StdPort = [u'曹妃甸',u'京唐',u'岚桥',u'岚山',u'连云港',u'青岛',u'日照']
