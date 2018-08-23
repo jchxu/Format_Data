@@ -44,7 +44,7 @@ def Standardize(Owner, Goods, Port, StdOwner, StdGoods, StdPort):
 def ClassifyByPortKind(Owner, Goods, Amount, Port):
     DataClassified = {}
     GoodList = list(set(Goods))
-    PortList = list(set(Port))
+    PortList = sorted(list(set(Port)))
     #初始化分类数据字典
     for i in PortList:
         DataClassified[i] = {}

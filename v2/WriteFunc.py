@@ -1,16 +1,13 @@
 # coding=utf-8
 import xlsxwriter
 
-
-
-
 ### 计算百分比，返回*100的结果，总数为0则全部返回0 ###
 def CalcRatio(Total, Steel, Trade):
     SteelRatio = 0
     TradeRatio = 0
     if Total != 0:
-        SteelRatio = 100 * Steel / Total
-        TradeRatio = 100 * Trade / Total
+        SteelRatio = 1 * Steel / Total
+        TradeRatio = 1 * Trade / Total
     return (SteelRatio, TradeRatio)
 
 ### TopShip格式化： 货主(数量)，货主(数量)……###
@@ -98,10 +95,17 @@ def WriteCSV(AmountInfo,ShipInfo, PortList, GoodsClassName, GoodsClassList):
     Filename = 'test.xlsx'
     WorkBook = xlsxwriter.Workbook(Filename)
     Sheet1 = WorkBook.add_worksheet()
+    StylePortTitle = WorkBook.add_format({'bold': 1, 'align':'center','font_color':'blue'})
+    StyleClassTitle = WorkBook.add_format({'bold': 1})
+    StyleClassAmount = WorkBook.add_format({'bold': 1, 'num_format':'#,##0'})
+    StyleClassRatio = WorkBook.add_format({'bold': 1, 'num_format':'0.0%'})
+    StyleAmount = WorkBook.add_format({'num_format':'#,##0'})
+    StyleRatio = WorkBook.add_format({'num_format':'0.0%'})
     for i in range(0, len(PortList)):
         port = PortList[i]
         #港口名称行
-        Sheet1.write(0,i*9,port)
+        #Sheet1.write(0,i*9,port)
+        Sheet1.merge_range(0,i*9,0,i*9+8,port,StylePortTitle)
         totalamount = AmountInfo[0][port]
         totalsteel = AmountInfo[1][port]
         totaltrade = totalamount - totalsteel
@@ -116,26 +120,25 @@ def WriteCSV(AmountInfo,ShipInfo, PortList, GoodsClassName, GoodsClassList):
         Sheet1.write(1, i*9+7, '贸易商货权Top 4-6')
         Sheet1.write(1, i*9+8, '贸易商货权Top other')
         #合计数据行
-        Sheet1.write(2, i*9, '合计')
-        Sheet1.write(2, i*9+1, totalamount)
-        Sheet1.write(2, i*9+2, totalsteel)
-        Sheet1.write(2, i*9+3, steeltotalratio)
-        Sheet1.write(2, i*9+4, totaltrade)
-        Sheet1.write(2, i*9+5, tradetotalratio)
+        Sheet1.write(2, i*9, '合计',StyleClassTitle)
+        Sheet1.write(2, i*9+1, totalamount,StyleClassAmount)
+        Sheet1.write(2, i*9+2, totalsteel,StyleClassAmount)
+        Sheet1.write(2, i*9+3, steeltotalratio,StyleClassRatio)
+        Sheet1.write(2, i*9+4, totaltrade,StyleClassAmount)
+        Sheet1.write(2, i*9+5, tradetotalratio,StyleClassRatio)
         ClassLineIndexDict = ClassLineIndex(GoodsClassName, GoodsClassList)
-        print(ClassLineIndexDict)
         for j in range(0,len(GoodsClassName)):
             classname = GoodsClassName[j]
             calsstotal = AmountInfo[2][port][classname]
             classsteel = AmountInfo[3][port][classname]
             classtrade = calsstotal - classsteel
             steelratio, traderatio = CalcRatio(calsstotal, classsteel, classtrade)
-            Sheet1.write(ClassLineIndexDict[j]+3, i*9, classname)
-            Sheet1.write(ClassLineIndexDict[j]+3, i*9+1, calsstotal)
-            Sheet1.write(ClassLineIndexDict[j]+3, i*9+2, classsteel)
-            Sheet1.write(ClassLineIndexDict[j]+3, i*9+3, steelratio)
-            Sheet1.write(ClassLineIndexDict[j]+3, i*9+4, classtrade)
-            Sheet1.write(ClassLineIndexDict[j]+3, i*9+5, traderatio)
+            Sheet1.write(ClassLineIndexDict[j]+3, i*9, classname,StyleClassTitle)
+            Sheet1.write(ClassLineIndexDict[j]+3, i*9+1, calsstotal,StyleClassAmount)
+            Sheet1.write(ClassLineIndexDict[j]+3, i*9+2, classsteel,StyleClassAmount)
+            Sheet1.write(ClassLineIndexDict[j]+3, i*9+3, steelratio,StyleClassRatio)
+            Sheet1.write(ClassLineIndexDict[j]+3, i*9+4, classtrade,StyleClassAmount)
+            Sheet1.write(ClassLineIndexDict[j]+3, i*9+5, traderatio,StyleClassRatio)
             if (j == 0) or (j == 1): #pass
                 for k in range(0,len(GoodsClassList[j])):
                     goodname = GoodsClassList[j][k]
@@ -158,11 +161,11 @@ def WriteCSV(AmountInfo,ShipInfo, PortList, GoodsClassName, GoodsClassList):
                         GoodOtherTop13, GoodOtherTop46, GoodOtherTopOther = ('','','')
                     steelratio, traderatio = CalcRatio(goodtotal, goodsteel, goodtrade)
                     Sheet1.write(ClassLineIndexDict[j]+4+k, i*9, goodname)
-                    Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+1, goodtotal)
-                    Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+2, goodsteel)
-                    Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+3, steelratio)
-                    Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+4, goodtrade)
-                    Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+5, traderatio)
+                    Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+1, goodtotal,StyleAmount)
+                    Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+2, goodsteel,StyleAmount)
+                    Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+3, steelratio,StyleRatio)
+                    Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+4, goodtrade,StyleAmount)
+                    Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+5, traderatio,StyleRatio)
                     Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+6, GoodOtherTop13)
                     Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+7, GoodOtherTop46)
                     Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+8, GoodOtherTopOther)
