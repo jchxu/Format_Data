@@ -2,7 +2,7 @@
 import xlrd, xlwt, re
 from os import path
 from Read_Data import *
-from xlutils.display import *
+#from xlutils.display import *
 
 """
 transfer_nick_amount
@@ -105,7 +105,7 @@ def transfer_nick_amount(subsheet, colindex):
     return amount
 
 def standardize_name(stdname, owner, goods):
-    stdfile = xlrd.open_workbook(stdname.decode('utf-8'), 'r')
+    stdfile = xlrd.open_workbook(stdname, 'r')
     ownerdic = {}
     goodsdic = {}
     ownersheet = stdfile.sheet_by_name("owner")
@@ -124,7 +124,7 @@ def standardize_name(stdname, owner, goods):
     for item in goods.keys():
         if goods[item] in goodsdic.keys():
             goods[item] = goodsdic[goods[item]]
-    print u"货主、货种的名称已替换为标准名称."
+    print(u"货主、货种的名称已替换为标准名称.")
     return (owner, goods)
 
 def sum_owner_goods (owner, goods, amount, ownername, goodsname):
@@ -301,7 +301,7 @@ def write_summary(resultfile, goods_class_list, totalrow, mainrow, classrow, goo
             for y in range(0, len(titlerow)):
                 subsheet.write(index+n+1, y, goodsrow[index2+n][y], summary_style('goods', y))
 
-    print u'统计信息已写入子表"\033[1;34;0m%s\033[0m".' % subsheet.name.encode('utf-8')
+    print(u'统计信息已写入子表"\033[1;34;0m%s\033[0m".' % subsheet.name.encode('utf-8'))
     return resultfile
 
 def write_detail(resultfile, owner, goods, amount):
@@ -323,7 +323,7 @@ def write_detail(resultfile, owner, goods, amount):
         subsheet.write(i, 1, owner[i], style_name)
         subsheet.write(i, 2, goods[i], style_name)
         subsheet.write(i, 3, amount[i], style_amount)
-    print u'详细信息已写入子表"\033[1;34;0m%s\033[0m".' % subsheet.name.encode('utf-8')
+    print(u'详细信息已写入子表"\033[1;34;0m%s\033[0m".' % subsheet.name.encode('utf-8'))
     return resultfile
 
 def calculate_trackdata(powder, block, goodsrow, owner, goods, amount, company):
@@ -567,7 +567,7 @@ def write_sum_summary(resultfile, dateitem, goods_class_list, totalrow, mainrow,
         for n in range(0, len(goods_class_list[k])):
             for y in range(0, len(titlerow)):
                 subsheet.write(index+n+1, y, goodsrow[index2+n][y], summary_style('goods', y))
-    print u'\033[1;34;0m%s\033[0m各港口汇总统计数据已写入Summary子表.' % dateitem
+    print(u'\033[1;34;0m%s\033[0m各港口汇总统计数据已写入Summary子表.' % dateitem)
     return resultfile
 
 def write_sum_detail(resultfile, item, dates, port, owner, goods, amount):
@@ -594,7 +594,7 @@ def write_sum_detail(resultfile, item, dates, port, owner, goods, amount):
         subsheet.write(i + 1, 3, goods[count], style_name)
         subsheet.write(i + 1, 4, amount[count], style_amount)
         count += 1
-    print u'\033[1;34;0m%s\033[0m各港口汇总共计\033[1;34;0m%s\033[0m条数据已写入Detail子表.' % (item, dates[item])
+    print(u'\033[1;34;0m%s\033[0m各港口汇总共计\033[1;34;0m%s\033[0m条数据已写入Detail子表.' % (item, dates[item]))
     return resultfile
 
 def write_sum_tracking(dateitem, trackfile, subsheet, rowindex, olddate, goods_class_name, goods_class_list, totalrow, mainrow, classrow, goodsrow):
@@ -675,7 +675,7 @@ def write_sum_tracking(dateitem, trackfile, subsheet, rowindex, olddate, goods_c
             subsheet.write(titleindex, index+i+2+(6*k)+3, u"钢厂占比", style_title)
             subsheet.write(titleindex, index+i+2+(6*k)+4, u"贸易商", style_title)
             subsheet.write(titleindex, index+i+2+(6*k)+5, u"贸易商占比", style_title)
-    print u'\033[1;34;0m%s\033[0m各港口汇总历史追踪数据已写入第\033[1;34;0m%d\033[0m行.' % (dateitem, writeindex + 1)
+    print(u'\033[1;34;0m%s\033[0m各港口汇总历史追踪数据已写入第\033[1;34;0m%d\033[0m行.' % (dateitem, writeindex + 1))
     return trackfile
 
 def del_dict_value(dicts, value):
@@ -714,7 +714,7 @@ def sum_by_traderandgoods(item, dates, goods_class_list, goods_class_name, compa
         if (owner[i] in trader) and (owner[i] not in traderorder.keys()):
             traderorder[owner[i]] = 0
         elif (owner[i] not in company) and (owner[i] not in trader):
-            print u'请检查,货主名"\033[1;31;0m%s\033[0m"既不在贸易商分类名单，也不在钢厂分类名单.' % owner[i]
+            print(u'请检查,货主名"\033[1;31;0m%s\033[0m"既不在贸易商分类名单，也不在钢厂分类名单.' % owner[i])
         if (goods[i] not in goodsorder.keys()):
             goodsorder[goods[i]] = 0
     for i in range(index1, index2):

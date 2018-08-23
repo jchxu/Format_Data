@@ -1,6 +1,6 @@
 # coding=utf-8
 import xlrd, xlwt, re, datetime
-from xlutils.copy import copy
+#from xlutils.copy import copy
 from os import path, listdir
 
 """
@@ -29,8 +29,8 @@ read_merge_cell
 """
 
 def get_tracking_file(trackname, index):
-    if path.exists(trackname.decode('utf-8')):
-        originfile = xlrd.open_workbook(trackname.decode('utf-8'), 'r', formatting_info=True)
+    if path.exists(trackname):
+        originfile = xlrd.open_workbook(trackname, 'r', formatting_info=True)
         trackfile = copy(originfile)
         subsheet = trackfile.get_sheet(0)
         rowindex = originfile.sheets()[0].nrows
@@ -50,7 +50,7 @@ def get_tracking_ownership(trackname, index):
     olddate1 = {}
     olddate2 = {}
     if path.exists(trackname.decode('utf-8')):
-        originfile = xlrd.open_workbook(trackname.decode('utf-8'), 'r', formatting_info=True)
+        originfile = xlrd.open_workbook(trackname, 'r', formatting_info=True)
         trackfile = copy(originfile)
         subsheet1 = trackfile.get_sheet(0)
         rowindex1 = originfile.sheets()[0].nrows
@@ -92,7 +92,7 @@ def get_date(filename):
         day = int(date.split('.')[-1])
         std_date = "%02d%02d" % (month, day)
     else:
-        print u"文件名中日期格式不适合，请将日期统一为**.**格式."
+        print(u"文件名中日期格式不适合，请将日期统一为**.**格式.")
     #print std_date
     return std_date
 
@@ -110,12 +110,12 @@ def get_filename (filename):
         return (resultname, trackname, stddate)
         #return resultname
     else:
-        print u"未找到文件名港口关键词，请检查文件名."
+        print(u"未找到文件名港口关键词，请检查文件名.")
 
 def read_list(listname):
     """读取分类名录文件中的主流粉矿、主流块矿、非主流资源、品种、钢厂、贸易商
     分别为一个子表各自返回一个列表"""
-    listfile = xlrd.open_workbook(listname.decode('utf-8'), 'r')
+    listfile = xlrd.open_workbook(listname, 'r')
     class_list = listfile.sheets()[0].col_values(0)
     kinds = listfile.sheets()[1].col_values(0)
     company = listfile.sheets()[2].col_values(0)
@@ -127,11 +127,11 @@ def read_list(listname):
         goods_class_list[i-3] = listfile.sheets()[i+1].col_values(0)
     #for item in class_list:
     #    print u'读取"%s"文件中的"%s"清单.' % (listname.decode('utf-8'), item)
-    print u'已读取"%s"文件中的\033[1;34;0m%d\033[0m个清单.' % (listname.decode('utf-8'), len(class_list))
+    print(u'已读取"%s"文件中的\033[1;34;0m%d\033[0m个清单.' % (listname, len(class_list)))
     return (kinds, company, trader, goods_class_list, goods_class_name)
 
 def read_shiplist(goodsshipname):
-    listfile = xlrd.open_workbook(goodsshipname.decode('utf-8'), 'r')
+    listfile = xlrd.open_workbook(goodsshipname, 'r')
     goodsshiplist = listfile.sheets()[0].col_values(0)
     return goodsshiplist
 
@@ -181,10 +181,10 @@ def read_data(sheets, sheetindex, kinds):
                     and (not (u"合计" in data[goodsindex])) and isinstance(data[amountindex],float):
                 uncountlist.append(data[goodsindex])
         for item in set(uncountlist):
-            print u'"\033[1;31;0m%s\033[0m"没有统计。若应统计在内，请检查分类名录中的“品种”清单是否包含.' % item
+            print('"\033[1;31;0m%s\033[0m"没有统计。若应统计在内，请检查分类名录中的“品种”清单是否包含.' % item)
 
     ### 返回存储数据的3个字典 ###
-    print u'共计读取\033[1;34;0m%d\033[0m条数据.' % count
+    print(u'共计读取\033[1;34;0m%d\033[0m条数据.' % count)
     return (owner, goods, amount)
 
 def judge_merger_cell(sheets, sheetindex):
@@ -195,8 +195,8 @@ def judge_merger_cell(sheets, sheetindex):
         if mergerange:
             for k in range(0, len(mergerange)):
                 #if (mergerange[k][3]-mergerange[k][2]) > 1:
-                print "Mergerd cell found in subsheet %d: Column %s->%s, Row %d->%d" \
-                      % (i, chr(65+mergerange[k][2]), chr(65+mergerange[k][3]-1), mergerange[k][0]+1, mergerange[k][1])
+                print("Mergerd cell found in subsheet %d: Column %s->%s, Row %d->%d" \
+                      % (i, chr(65+mergerange[k][2]), chr(65+mergerange[k][3]-1), mergerange[k][0]+1, mergerange[k][1]))
 
 def read_merge_cell(sheets):
     mergedict = {}
@@ -210,7 +210,7 @@ def read_merge_cell(sheets):
                     for n in range(clow, chigh):
                         mergedict[count] = [i, m, n, sheets[i].cell_value(rlow, clow)]
                         count += 1
-    print "A total of %d mergerd cells found." % count
+    print("A total of %d mergerd cells found." % count)
     return (mergedict, count)
 
 def getCustomFiles(prefix, path):
@@ -226,14 +226,14 @@ def classbydate(files):
     date_files = {}
     for item in files:
         filename = item.strip('.xls').split('-')
-        dates.append(filename[2].encode('utf-8'))
+        dates.append(filename[2])
     #print dates
     #print list(set(dates))
     for item in list(set(dates)):
         lists = []
         for portfile in files:
             filename = portfile.strip('.xls').split('-')
-            if item == filename[-1].encode('utf-8'):
+            if item == filename[-1]:
                 lists.append(portfile)
         date_files[item] = lists
     return date_files
