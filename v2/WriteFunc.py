@@ -44,15 +44,14 @@ def ClassLineIndex(GoodsClassName, GoodsClassList):
     ClassLineIndexDict[0] = 0
     for i in range(1,len(GoodsClassName)):
         ClassLineIndexDict[i] = len(GoodsClassList[i-1]) + ClassLineIndexDict[i-1] + 1
-        if i >= 3:  #假设只列出前两类的明细
-            ClassLineIndexDict[i] = ClassLineIndexDict[i-1] + 1
+        #if i >= 3: ClassLineIndexDict[i] = ClassLineIndexDict[i-1] + 1  #假设只列出前两类的明细
     return ClassLineIndexDict
 
 
 ### 打印输出各港口、分类、品种汇总数量、货权集中度 （屏幕输出、txt版）###
 #AmountInfo = [TotalAmount, TotalSteel, ClassTotal, ClassSteel, GoodsTotal, GoodsSteel]
 #ShipInfo = [GoodShip, GoodSteelShip, GoodOtherShip]
-def WriteTXT(AmountInfo,ShipInfo, PortList, GoodsClassName, GoodsClassList):
+def WriteTXT(ResFileName,AmountInfo,ShipInfo, PortList, GoodsClassName, GoodsClassList):
     for i in range(0,len(PortList)):
         print(PortList[i])
         port = PortList[i]
@@ -90,17 +89,21 @@ def WriteTXT(AmountInfo,ShipInfo, PortList, GoodsClassName, GoodsClassList):
                     print("%s,%.0f,%.0f,%.1f%%,%.0f,%.1f%%" % (goodname, goodtotal, goodsteel, steelratio, goodtrade, traderatio), sep=',', end = ',')
                     print("%s,%s,%s,%s,%s,%s,%s,%s,%s" % (GoodTop13, GoodTop46, GoodTopOther,GoodSteelTop13, GoodSteelTop46, GoodSteelTopOther,GoodOtherTop13, GoodOtherTop46, GoodOtherTopOther), sep=',')
 
-### 打印输出各港口、分类、品种汇总数量、货权集中度 （csv版）###
-def WriteCSV(AmountInfo,ShipInfo, PortList, GoodsClassName, GoodsClassList):
-    Filename = 'test.xlsx'
+### 打印输出各港口、分类、品种汇总数量、货权集中度 （Excel版）###
+def WriteExcel(ResFileName,AmountInfo,ShipInfo, PortList, GoodsClassName, GoodsClassList):
+    Filename = ResFileName+'.xlsx'
     WorkBook = xlsxwriter.Workbook(Filename)
     Sheet1 = WorkBook.add_worksheet()
+    Sheet1.freeze_panes(2, 0)
+    #格式控制
     StylePortTitle = WorkBook.add_format({'bold': 1, 'align':'center','font_color':'blue'})
-    StyleClassTitle = WorkBook.add_format({'bold': 1})
+    StyleClassTitle = WorkBook.add_format({'bold': 1,'left':1})
+    StyleGoodTitle = WorkBook.add_format({'left':1})
     StyleClassAmount = WorkBook.add_format({'bold': 1, 'num_format':'#,##0'})
     StyleClassRatio = WorkBook.add_format({'bold': 1, 'num_format':'0.0%'})
     StyleAmount = WorkBook.add_format({'num_format':'#,##0'})
     StyleRatio = WorkBook.add_format({'num_format':'0.0%'})
+
     for i in range(0, len(PortList)):
         port = PortList[i]
         #港口名称行
@@ -111,6 +114,7 @@ def WriteCSV(AmountInfo,ShipInfo, PortList, GoodsClassName, GoodsClassList):
         totaltrade = totalamount - totalsteel
         steeltotalratio, tradetotalratio = CalcRatio(totalamount, totalsteel, totaltrade)
         #标题行
+        Sheet1.write(1, i*9, '',StyleGoodTitle)
         Sheet1.write(1, i*9+1, '总数量')
         Sheet1.write(1, i*9+2, '钢厂总数')
         Sheet1.write(1, i*9+3, '钢厂占比')
@@ -139,43 +143,44 @@ def WriteCSV(AmountInfo,ShipInfo, PortList, GoodsClassName, GoodsClassList):
             Sheet1.write(ClassLineIndexDict[j]+3, i*9+3, steelratio,StyleClassRatio)
             Sheet1.write(ClassLineIndexDict[j]+3, i*9+4, classtrade,StyleClassAmount)
             Sheet1.write(ClassLineIndexDict[j]+3, i*9+5, traderatio,StyleClassRatio)
-            if (j == 0) or (j == 1): #pass
-                for k in range(0,len(GoodsClassList[j])):
-                    goodname = GoodsClassList[j][k]
-                    if goodname in AmountInfo[4][port].keys():
-                        goodtotal = AmountInfo[4][port][goodname]
-                        goodsteel = AmountInfo[5][port][goodname]
-                        goodtrade = goodtotal - goodsteel
-                        #goodship = ShipInfo[0][port][goodname]
-                        #goodsteelship = ShipInfo[1][port][goodname]
-                        goodothership = ShipInfo[2][port][goodname]
-                        #GoodTop13, GoodTop46, GoodTopOther = TopShip(goodship)
-                        #GoodSteelTop13, GoodSteelTop46, GoodSteelTopOther = TopShip(goodsteelship)
-                        GoodOtherTop13, GoodOtherTop46, GoodOtherTopOther = TopShip(goodothership)
-                    else:
-                        goodtotal = 0
-                        goodsteel = 0
-                        goodtrade = 0
-                        #GoodTop13, GoodTop46, GoodTopOther = ('','','')
-                        #GoodSteelTop13, GoodSteelTop46, GoodSteelTopOther = ('','','')
-                        GoodOtherTop13, GoodOtherTop46, GoodOtherTopOther = ('','','')
-                    steelratio, traderatio = CalcRatio(goodtotal, goodsteel, goodtrade)
-                    Sheet1.write(ClassLineIndexDict[j]+4+k, i*9, goodname)
-                    Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+1, goodtotal,StyleAmount)
-                    Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+2, goodsteel,StyleAmount)
-                    Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+3, steelratio,StyleRatio)
-                    Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+4, goodtrade,StyleAmount)
-                    Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+5, traderatio,StyleRatio)
-                    Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+6, GoodOtherTop13)
-                    Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+7, GoodOtherTop46)
-                    Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+8, GoodOtherTopOther)
+            #if (j == 0) or (j == 1): #pass
+            for k in range(0,len(GoodsClassList[j])):
+                goodname = GoodsClassList[j][k]
+                if goodname in AmountInfo[4][port].keys():
+                    goodtotal = AmountInfo[4][port][goodname]
+                    goodsteel = AmountInfo[5][port][goodname]
+                    goodtrade = goodtotal - goodsteel
+                    #goodship = ShipInfo[0][port][goodname]
+                    #goodsteelship = ShipInfo[1][port][goodname]
+                    goodothership = ShipInfo[2][port][goodname]
+                    #GoodTop13, GoodTop46, GoodTopOther = TopShip(goodship)
+                    #GoodSteelTop13, GoodSteelTop46, GoodSteelTopOther = TopShip(goodsteelship)
+                    GoodOtherTop13, GoodOtherTop46, GoodOtherTopOther = TopShip(goodothership)
+                else:
+                    goodtotal = 0
+                    goodsteel = 0
+                    goodtrade = 0
+                    #GoodTop13, GoodTop46, GoodTopOther = ('','','')
+                    #GoodSteelTop13, GoodSteelTop46, GoodSteelTopOther = ('','','')
+                    GoodOtherTop13, GoodOtherTop46, GoodOtherTopOther = ('','','')
+                steelratio, traderatio = CalcRatio(goodtotal, goodsteel, goodtrade)
+                Sheet1.write(ClassLineIndexDict[j]+4+k, i*9, goodname,StyleGoodTitle)
+                Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+1, goodtotal,StyleAmount)
+                Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+2, goodsteel,StyleAmount)
+                Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+3, steelratio,StyleRatio)
+                Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+4, goodtrade,StyleAmount)
+                Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+5, traderatio,StyleRatio)
+                Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+6, GoodOtherTop13)
+                Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+7, GoodOtherTop46)
+                Sheet1.write(ClassLineIndexDict[j]+4+k, i*9+8, GoodOtherTopOther)
     WorkBook.close()
 
-def WriteSummary(Flag,AmountInfo,ShipInfo, PortList, GoodsClassName, GoodsClassList):
-    if Flag == 'txt':
-        WriteTXT(AmountInfo, ShipInfo, PortList, GoodsClassName, GoodsClassList)
-    elif Flag == 'csv':
-        WriteCSV(AmountInfo, ShipInfo, PortList, GoodsClassName, GoodsClassList)
-    elif ('txt' in Flag) and ('csv' in Flag):
-        WriteTXT(AmountInfo, ShipInfo, PortList, GoodsClassName, GoodsClassList)
-        WriteCSV(AmountInfo, ShipInfo, PortList, GoodsClassName, GoodsClassList)
+### 区分书写csv还是xlsx ###
+def WriteSummary(Flag,ResFileName,AmountInfo,ShipInfo, PortList, GoodsClassName, GoodsClassList):
+    if (Flag == 'txt') or (Flag == 'csv'):
+        WriteTXT(ResFileName,AmountInfo, ShipInfo, PortList, GoodsClassName, GoodsClassList)
+    elif Flag == 'xlsx':
+        WriteExcel(ResFileName,AmountInfo, ShipInfo, PortList, GoodsClassName, GoodsClassList)
+    elif ('txt' in Flag) and ('xlsx' in Flag):
+        WriteTXT(ResFileName,AmountInfo, ShipInfo, PortList, GoodsClassName, GoodsClassList)
+        WriteExcel(ResFileName,AmountInfo, ShipInfo, PortList, GoodsClassName, GoodsClassList)
