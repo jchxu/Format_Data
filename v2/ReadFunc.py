@@ -121,37 +121,44 @@ def ReadStd(StdFileName):
 
 ### 读取曹妃甸港口数据 ###
 def ReadPort0(PortFilename,PortDate):
-    PortFile = xlrd.open_workbook(PortFilename, 'r')
+    PortFile = xlrd.open_workbook(PortFilename, formatting_info=True)
+
     PortFile.release_resources()
 
 ### 读取京唐港口数据 ###
 def ReadPort1(PortFilename,PortDate):
-    PortFile = xlrd.open_workbook(PortFilename, 'r')
+    PortFile = xlrd.open_workbook(PortFilename, formatting_info=True)
+
     PortFile.release_resources()
 
 ### 读取岚桥港口数据 ###
 def ReadPort2(PortFilename,PortDate):
-    PortFile = xlrd.open_workbook(PortFilename, 'r')
+    PortFile = xlrd.open_workbook(PortFilename, formatting_info=True)
+
     PortFile.release_resources()
 
 ### 读取岚山港口数据 ###
 def ReadPort3(PortFilename,PortDate):
-    PortFile = xlrd.open_workbook(PortFilename, 'r')
+    PortFile = xlrd.open_workbook(PortFilename, formatting_info=True)
+
     PortFile.release_resources()
 
 ### 读取连云港港口数据 ###
 def ReadPort4(PortFilename,PortDate):
-    PortFile = xlrd.open_workbook(PortFilename, 'r')
+    PortFile = xlrd.open_workbook(PortFilename, formatting_info=True)
+
     PortFile.release_resources()
 
 ### 读取青岛港口数据 ###
 def ReadPort5(PortFilename,PortDate):
-    PortFile = xlrd.open_workbook(PortFilename, 'r')
+    PortFile = xlrd.open_workbook(PortFilename, formatting_info=True)
+
     PortFile.release_resources()
 
 ### 读取日照港口数据 ###
 def ReadPort6(PortFilename,PortDate):
-    PortFile = xlrd.open_workbook(PortFilename, 'r')
+    PortFile = xlrd.open_workbook(PortFilename, formatting_info=True)
+
     PortFile.release_resources()
 
 
